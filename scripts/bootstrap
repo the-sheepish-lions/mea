@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+# Update sources:
+apt-get update
+
+# Install development tools:
+apt-get -y install build-essential
+
+# Extras for RubyGems and Rails:
+apt-get -y install zlib1g-dev libssl-dev
+
+# Readline Dev on Ubuntu 12.04 LTS:
+apt-get -y install libreadline-gplv2-dev
+
+# Install some nokogiri dependencies:
+apt-get -y install libxml2 libxml2-dev libxslt1-dev
+
+# Postgres, Git, CURL, Subversion:
+apt-get -y install postgresql postgresql-client libpq-dev git-core curl subversion
+
+# Java:
+apt-get -y install openjdk-7-jre-headless
+
+# Development Tools:
+apt-get -y install vim screen tree exuberant-ctags ack-grep

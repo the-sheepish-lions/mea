@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e
+
+dc_path=`dirname $0`/..
+
+echo "Installing Datomic Console..."
+
+if [ "$1" == "" ]; then
+  echo "Usage: $0 datomic-pro-dir"
+  exit -1
+fi
+
+d_path=$1
+
+echo "Copying files..."
+rm -rf ${d_path}/lib/console
+cp -R ${dc_path} ${d_path}
+rm -f ${d_path}/bin/install-console
+
+echo "Done!"
