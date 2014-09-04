@@ -1,7 +1,15 @@
 (ns mea.core-test
-  (:require [clojure.test :refer :all]
-            [mea.core :refer :all]))
+  (:use midje.sweet)
+  (:require [mea.core :refer :all]))
 
-(deftest a-test
-  (testing "FIXME, I fail."
-    (is (= 0 1))))
+(def db-uri "datomic:mem://mea")
+
+(defn tx-future? [f]
+  (and
+    (contains? f :db-before)
+    (contains? f :db-after)
+    (contains? f :tx-data)
+    (contains? f :tempids)))
+
+(facts "sets up database"
+       (tx-future? (setup-db db-uri)) => true)
