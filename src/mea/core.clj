@@ -1,10 +1,10 @@
 (ns mea.core
-  (require [datomic.api :as d])
+  (:require [datomic.api :as d])
   (:gen-class))
 
 (def schema-txs [
                  ;; Participants
-                 [{:db/id #db/id[:db.part/db]
+                 {:db/id #db/id[:db.part/db]
                    :db/ident :participant/participant_id
                    :db/valueType :db.type/uuid
                    :db/cardinality :db.cardinality/one
@@ -56,8 +56,8 @@
                    :db.install/_attribute :db.part/db}
                  
                   ;; sexes
-                  [:db/add #db/id[:db.part/mea] :db/ident :participant.sex/male]
-                  [:db/add #db/id[:db.part/mea] :db/ident :participant.sex/female]
+                  [:db/add #db/id[:db.part/user] :db/ident :participant.sex/male]
+                  [:db/add #db/id[:db.part/user] :db/ident :participant.sex/female]
                  
                   {:db/id #db/id[:db.part/db]
                    :db/ident :patient/address
@@ -131,12 +131,7 @@
                    :db/valueType :db.type/keyword
                    :db/cardinality :db.cardinality/many
                    :db/doc "A list of study-specific attributes that can be added to a participant"
-                   :db.install/_attribute :db.part/db}]
-                
-                  ;; Mea partition
-                  [{:db/id #db/id[:db.part/db]
-                    :db/ident :mea
-                    :db/install/_partition :db.part/db}]])
+                   :db.install/_attribute :db.part/db}])
 
 
 ;; transation functions
@@ -153,6 +148,13 @@
 
 (defn read-db [db-uri]
   (d/db (d/connect db-uri)))
+
+(defn create-participant [conn proto]
+  (let [id (d/tempid :db.part/user)
+        txs (cons [:db/add id :participant/participant_id (java.util.UUID/randomUUID)]
+              (map #([:db/add id (keyword "participant" (str %1)) (get proto %1)]) (keys proto)))]
+    (prn txs)
+    (d/transact txs)))
 
 (defn -main
   [& args])
