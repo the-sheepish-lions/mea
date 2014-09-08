@@ -5,14 +5,16 @@
             [compojure.core :refer [defroutes ANY]])
   (:gen-class))
 
+(set! *warn-on-reflection* true)
+
 (defn load-config! [file]
   (with-open [^java.io.Reader reader (clojure.java.io/reader file)]
     (let [props (java.util.Properties.)]
       (.load props reader)
       (into {} (for [[k v] props] [(keyword k) (read-string v)])))))
 
-(def config (load-config! "resources/config.properties"))
-(def db-uri (get config :datomic-uri))
+(def datomic-config (load-config! "config/datomic.properties"))
+(def db-uri (get datomic-config :uri))
 
 ;; setup database
 (data/setup-db db-uri)

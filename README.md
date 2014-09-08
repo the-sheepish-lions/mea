@@ -1,36 +1,24 @@
-# mea
+# mea-service
 
-FIXME: description
+FIXME
 
-## Installation
+## Getting Started
 
-Download from http://example.com/FIXME.
+1. Start the application: `lein run-dev` \*
+2. Go to [localhost:8080](http://localhost:8080/) to see: `Hello World!`
+3. Read your app's source code at src/mea_service/service.clj. Explore the docs of functions
+   that define routes and responses.
+4. Run your app's tests with `lein test`. Read the tests at test/mea_service/service_test.clj.
+5. Learn more! See the [Links section below](#links).
 
-## Usage
+\* `lein run-dev` automatically detects code changes. Alternatively, you can run in production mode
+with `lein run`.
 
-FIXME: explanation
+## Configuration
 
-    $ java -jar mea-0.1.0-standalone.jar [args]
+To configure logging see config/logback.xml. By default, the app logs to stdout and logs/.
+To learn more about configuring Logback, read its [documentation](http://logback.qos.ch/documentation.html).
 
-## Options
+## Links
+* [Other examples](https://github.com/pedestal/samples)
 
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
-
-## License
-
-Copyright © 2014 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
