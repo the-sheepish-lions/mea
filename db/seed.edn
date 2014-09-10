@@ -1,0 +1,58 @@
+[{:db/id #db/id[:db.part/db -1]
+  :db/ident :mea
+  :db.install/_partition :db.part/db}]
+
+[:db/add #db/id[:db.part/mea -1] :study/keyword :grade]
+[:db/add #db/id[:db.part/mea -1] :study/human-name "GRADE"]
+
+;; The GRADE partition, entities, and participant attributes
+[{:db/id #db/id[:db.part/db]
+  :db/ident :grade
+  :db.install/_partition :db.part/db}]
+
+;; GRADE participant attributes and entities
+[
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/pid
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/unique :db.unique/value
+  :db/doc "A GRADE participants unique participant ID"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/gcode
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/unique :db.unique/value
+  :db/doc "A GRADE participants unique GCODE"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/rand-date
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc "The participant's randomization date for GRADE"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/rand-group
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc "The group the participant was randomized into for GRADE"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/dx-date
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc "The date the participant was diagnosed with diabetes"
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :grade/participant/init-metformin-dose
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc "The participant's initial metformin dose at the time of screening"
+  :db.install/_attribute :db.part/db}
+]

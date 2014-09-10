@@ -14,8 +14,6 @@
   :ring {:handler mea.routes/app}
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
-  :profiles {:dev {:aliases {"run-dev" ["trampoline" "run" "-m" "mea-service.server/run-dev"]}
-                   :dependencies [[javax.servlet/servlet-api "2.5"]
+  :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-devel "1.3.1"]]}}
-  :global-vars {*print-length* 100}
-  :main ^{:skip-aot true} mea.service.server)
+  :global-vars {*print-length* 100})

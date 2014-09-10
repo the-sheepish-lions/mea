@@ -22,4 +22,4 @@ apt-get -y install postgresql postgresql-client libpq-dev git-core curl subversi
 apt-get -y install openjdk-7-jre-headless
 
 # Development Tools:
-apt-get -y install vim screen tree exuberant-ctags ack-grep
+apt-get -y install vim screen tree exuberant-ctags ack-grep ruby rake
