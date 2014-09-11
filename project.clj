@@ -13,6 +13,7 @@
                  [ch.qos.logback/logback-classic "1.1.2" :exclusions [org.slf4j/slf4j-api]]]
   :ring {:handler mea.routes/app}
   :min-lein-version "2.0.0"
+  :main mea.core
   :resource-paths ["config", "resources"]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-devel "1.3.1"]]}}
