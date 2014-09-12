@@ -39,16 +39,17 @@
 
 ;; setup && seed database
 ;(setup-db (load-txs "db/schema.edn"))
-(d/create-database db-uri)
-(transact-all (d/connect db-uri) "db/schema.edn")
-(transact-all (d/connect db-uri) "db/seed.edn")
+(if (d/create-database db-uri)
+  (do
+    (transact-all (d/connect db-uri) "db/schema.edn")
+    (transact-all (d/connect db-uri) "db/seed.edn")))
 
 ;; our database connection
 (def conn (d/connect db-uri))
 
 (defn get-db [] (d/db conn))
 
-(defn map->txs
+(defn build-txs
   "Converts a namespace (keyword) and a map into a vector of vector assertions.
    This is used internally by entity constructors e.g. `create-participant'.
 
@@ -62,6 +63,8 @@
         make-tx (fn [k] [tx id (keyword (name ns) (name k)) (get m k)])]
     (vec (map make-tx ks))))
 
+(defrecord Participant [id first-name last-name])
+
 (defn create-participant
   "Creates participant entity from a map, returns a vector of the form:
 
@@ -74,26 +77,35 @@
                             {:first-name \"John\" :last-name \"Smith\"})"
   [conn study proto]
   (let [id (d/squuid)
-        tx (d/transact conn
-                       (map->txs (keyword "db.part" (name study))
-                                 :db/add
-                                 :participant
-                                 (into {:participant-id id} proto)))]
-    [(get tx :db-after) id]))
+        part (keyword "db.part" (str "study."(name study)))
+        tx @(d/transact conn
+                        (build-txs part
+                                   :db/add
+                                   :participant
+                                   (into {:participant-id id} proto)))]
+    id))
+
+(defn map->participant [ppt]
+  (Participant. (:participant/participant-id ppt)
+                (:participant/first-name ppt)
+                (:participant/last-name ppt)))
 
 (defn get-participant
   "Find a participant by it's UUID, returns a dynamic map
    of the given participant's attributes or nil if the
    participant cannot be found"
   [db uuid]
-  (first (map (fn [eid] (d/entity db eid))
-              (first (d/q '[:find ?p :where [?p :participant/participant-id uuid]] db)))))
+  (let [ppt (first (map (fn [eid] (d/entity db eid))
+                        (first (d/q '[:find ?p
+                                      :where
+                                      [?p :participant/participant-id uuid]] db))))]
+    (map->participant ppt)))
 
 (defn get-all-participants
   ""
   [db]
-  (map (fn [eid] (d/entity db eid))
-       (first (d/q '[:find ?p :where [?p :participant/participant-id]] db))))
+  (map (fn [e] (map->participant (d/entity (get-db) (first e))))
+       (d/q '[:find ?p :where [?p :participant/participant-id]] (get-db))))
 
 (defn create-study
   "Creates study entity from a map, returns a vector of the form:
