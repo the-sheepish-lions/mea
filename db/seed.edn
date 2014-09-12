@@ -1,3 +1,4 @@
+;; a partition for global entities like Studies
 [{:db/id #db/id[:db.part/db -1]
   :db/ident :db.part/mea
   :db.install/_partition :db.part/db}]
@@ -7,7 +8,7 @@
 
 ;; The GRADE partition, entities, and participant attributes
 [{:db/id #db/id[:db.part/db]
-  :db/ident :db.part/study.grade
+  :db/ident :db.part.study/grade
   :db.install/_partition :db.part/db}]
 
 ;; GRADE participant attributes and entities
@@ -57,6 +58,7 @@
   :db.install/_attribute :db.part/db}
 ]
 
+;; some metrics to start with for GRADE
 [:db/add #db/id[:db.part/grade -1] :metric/name :a1c]
 [:db/add #db/id[:db.part/grade -2] :metric/human-name "HbA1c"]
 [:db/add #db/id[:db.part/grade -3] :metric/unit "%"]

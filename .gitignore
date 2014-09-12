@@ -5,3 +5,4 @@ vendor/
 .lein-repl-history
 .vagrant
 config/datomic.properties
+db/*.csv

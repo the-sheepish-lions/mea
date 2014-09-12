@@ -63,32 +63,13 @@
         make-tx (fn [k] [tx id (keyword (name ns) (name k)) (get m k)])]
     (vec (map make-tx ks))))
 
-(defrecord Participant [id first-name last-name])
-
-(defn create-participant
-  "Creates participant entity from a map, returns a vector of the form:
-
-       [db uuid]
-
-   where `db' is the updated database and `uuid' is the participant's UUID.
-
-   e.g. (create-participant conn
-                            :grade
-                            {:first-name \"John\" :last-name \"Smith\"})"
-  [conn study proto]
-  (let [id (d/squuid)
-        part (keyword "db.part" (str "study."(name study)))
-        tx @(d/transact conn
-                        (build-txs part
-                                   :db/add
-                                   :participant
-                                   (into {:participant-id id} proto)))]
-    id))
+(defrecord Participant [id first-name last-name entity])
 
 (defn map->participant [ppt]
   (Participant. (:participant/participant-id ppt)
                 (:participant/first-name ppt)
-                (:participant/last-name ppt)))
+                (:participant/last-name ppt)
+                ppt))
 
 (defn get-participant
   "Find a participant by it's UUID, returns a dynamic map
@@ -97,9 +78,33 @@
   [db uuid]
   (let [ppt (first (map (fn [eid] (d/entity db eid))
                         (first (d/q '[:find ?p
+                                      :in $ ?uuid
                                       :where
-                                      [?p :participant/participant-id uuid]] db))))]
-    (map->participant ppt)))
+                                      [?p :participant/participant-id ?uuid]]
+                                    db uuid))))]
+    (if (nil? ppt)
+      nil
+      (map->participant ppt))))
+
+(defn add-participant
+  "Builds participant entity from a map, adds the entity to, the database
+   specified by the given connection, and returns the participant's UUID.
+
+   e.g. (add-participant conn
+                         :some-study
+                         {:first-name \"John\" :last-name \"Smith\"})"
+  [conn study proto]
+  (let [uuid (d/squuid)
+        part (keyword "db.part.study" (name study))
+        tx @(d/transact conn
+                        (build-txs part
+                                   :db/add
+                                   :participant
+                                   (into {:participant-id uuid} proto)))]
+    [(:db-after tx) uuid]))
+
+(defn create-participant [conn study proto]
+  (apply get-participant (add-participant conn study proto)))
 
 (defn get-all-participants
   ""
@@ -118,10 +123,10 @@
    e.g. (create-study conn :grade \"GRADE\")"
   [conn name human-name]
   (let [tx (d/transact conn
-                       (map->txs :db.part/mea
-                                 :db/add
-                                 :study
-                                 {:name name :human-name name}))]
+                       (build-txs :db.part/mea
+                                  :db/add
+                                  :study
+                                  {:name name :human-name name}))]
     [(get tx :db-after) name]))
 
 (defn get-study
