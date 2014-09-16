@@ -8,7 +8,7 @@
 
 (defroutes main-routes
   (GET "/" [] (index-page))
-  (GET "/participants.json" [page] (json-participant-listing))
+  (GET "/participants" [page per-page] (list-participants page per-page))
   (route/resources "/")
   (route/not-found "Page not found"))
 

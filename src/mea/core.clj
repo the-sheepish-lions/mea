@@ -1,5 +1,6 @@
 (ns mea.core
   (:require [datomic.api :as d]
+            [clojure.data.json :as json]
             [clojure.java.io :as io])
   (:import datomic.Util)
   (:gen-class))
@@ -34,7 +35,7 @@
     (d/create-database db-uri)
     (d/transact (d/connect db-uri) schema-txs)))
 
-(def datomic-config (load-config "config/datomic.properties"))
+(def datomic-config (load-config "config/peer.properties"))
 (def db-uri (get datomic-config :datomic.uri))
 
 ;; setup && seed database
@@ -63,13 +64,35 @@
         make-tx (fn [k] [tx id (keyword (name ns) (name k)) (get m k)])]
     (vec (map make-tx ks))))
 
-(defrecord Participant [id first-name last-name entity])
+(defn entity-dispatch [e]
+  (cond (contains? e :participant/participant-id) ::participant
+        (contains? e :study/keyword) ::study
+        (contains? e :metric/name) ::metric
+        (contains? e :measurement/metric) ::measurement))
 
-(defn map->participant [ppt]
-  (Participant. (:participant/participant-id ppt)
-                (:participant/first-name ppt)
-                (:participant/last-name ppt)
-                ppt))
+(defmulti id-of entity-dispatch)
+(defmethod id-of nil [e] nil)
+(defmethod id-of ::study [e] (get e :study/keyword))
+(defmethod id-of ::metric [e] (get e :metric/name))
+(defmethod id-of ::participant [e] (get e :participant/participant-id))
+
+(defmulti name-of entity-dispatch)
+(defmethod name-of nil [e] "")
+(defmethod name-of ::study [e] (get e :study/keyword))
+(defmethod name-of ::metric [e] (get e :metric/name))
+(defmethod name-of ::measurement [e]
+  (str (name-of (get e :measurement/participant))
+       " "
+       (name-of (get e :measurement/metric))))
+(defmethod name-of ::participant [e]
+  (str (get e :participant/first-name) " " (get e :participant/last-name)))
+
+(defmulti human-name-of entity-dispatch)
+(defmethod human-name-of nil [e] "")
+(defmethod human-name-of ::study [e] (get e :study/human-name))
+(defmethod human-name-of ::metric [e] (get e :metric/human-name))
+(defmethod human-name-of ::measurement [e] (name-of e))
+(defmethod human-name-of ::participant [e] (name-of e))
 
 (defn get-participant
   "Find a participant by it's UUID, returns a dynamic map
@@ -82,9 +105,7 @@
                                       :where
                                       [?p :participant/participant-id ?uuid]]
                                     db uuid))))]
-    (if (nil? ppt)
-      nil
-      (map->participant ppt))))
+    ppt))
 
 (defn add-participant
   "Builds participant entity from a map, adds the entity to, the database
@@ -107,10 +128,10 @@
   (apply get-participant (add-participant conn study proto)))
 
 (defn get-all-participants
-  ""
+  "Returns all participants"
   [db]
-  (map (fn [e] (map->participant (d/entity (get-db) (first e))))
-       (d/q '[:find ?p :where [?p :participant/participant-id]] (get-db))))
+  (map (fn [e] (d/entity db (first e)))
+       (d/q '[:find ?p :where [?p :participant/participant-id]] db)))
 
 (defn create-study
   "Creates study entity from a map, returns a vector of the form:
@@ -134,4 +155,4 @@
    of the given study's attribute or nil of the study cannot be found."
   [db name]
   (first (map (fn [eid] (d/entity db eid))
-              (first (d/q '[:find ?s :where [?s :study/name name]] db)))))
+              (first (d/q '[:find ?s :where [?s :study/keyword name]] db)))))

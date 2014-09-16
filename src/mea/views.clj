@@ -1,7 +1,7 @@
 (ns mea.views
   (:use [hiccup core page])
   (:require [clojure.data.json :as json]
-            [mea.data :as data]))
+            [mea.core :as core]))
 
 (defn index-page
   "Display the Mea Web Service Documentation as HTML"
@@ -35,7 +35,9 @@
 
 (defn list-participants
   "Return full participant listing as JSON"
-  [page per-page])
+  [page per-page]
+  (json-response (map (fn [e] {:id (.toString (core/id-of e)) :name (core/name-of e)})
+                      (core/get-all-participants (core/get-db)))))
 
 (defn create-participant
   "Create a paticiant with the given attributes
