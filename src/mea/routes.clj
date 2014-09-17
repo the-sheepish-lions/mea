@@ -9,6 +9,7 @@
 (defroutes main-routes
   (GET "/" [] (index-page))
   (GET "/participants" [page per-page] (list-participants page per-page))
+  (POST "/participants" {body :body} (create-participant (slurp body)))
   (route/resources "/")
   (route/not-found "Page not found"))
 

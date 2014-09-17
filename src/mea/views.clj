@@ -21,6 +21,11 @@
       [:h1 "Welcome!"]
       [:small "This is the Mea Web Service Documentation"]]]]))
 
+(extent-type datomic.query.EntityMap
+  clojure.data.json/JSONWriter
+  (write- [this output]
+    ))
+
 (defn json-response
   "A helper function for returning a JSON response"
   [body]
@@ -42,7 +47,9 @@
 (defn create-participant
   "Create a paticiant with the given attributes
    return a JSON string representation of of the participant"
-  [attrs])
+  [body]
+  (let [args (json/read-str body :key-fn (fn [k] (keyword k)))]
+    (json-response (core/create-participant core/conn :grade args))))
 
 (defn get-participant
   "Return the JSON representation of a participant"

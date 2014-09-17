@@ -65,7 +65,7 @@
     (vec (map make-tx ks))))
 
 (defn entity-dispatch [e]
-  (cond (contains? e :participant/participant-id) ::participant
+  (cond (contains? e :participant/participant_id) ::participant
         (contains? e :study/keyword) ::study
         (contains? e :metric/name) ::metric
         (contains? e :measurement/metric) ::measurement))
@@ -74,7 +74,7 @@
 (defmethod id-of nil [e] nil)
 (defmethod id-of ::study [e] (get e :study/keyword))
 (defmethod id-of ::metric [e] (get e :metric/name))
-(defmethod id-of ::participant [e] (get e :participant/participant-id))
+(defmethod id-of ::participant [e] (get e :participant/participant_id))
 
 (defmulti name-of entity-dispatch)
 (defmethod name-of nil [e] "")
@@ -85,12 +85,12 @@
        " "
        (name-of (get e :measurement/metric))))
 (defmethod name-of ::participant [e]
-  (str (get e :participant/first-name) " " (get e :participant/last-name)))
+  (str (get e :participant/first_name) " " (get e :participant/last_name)))
 
 (defmulti human-name-of entity-dispatch)
 (defmethod human-name-of nil [e] "")
-(defmethod human-name-of ::study [e] (get e :study/human-name))
-(defmethod human-name-of ::metric [e] (get e :metric/human-name))
+(defmethod human-name-of ::study [e] (get e :study/human_name))
+(defmethod human-name-of ::metric [e] (get e :metric/human_name))
 (defmethod human-name-of ::measurement [e] (name-of e))
 (defmethod human-name-of ::participant [e] (name-of e))
 
@@ -103,7 +103,7 @@
                         (first (d/q '[:find ?p
                                       :in $ ?uuid
                                       :where
-                                      [?p :participant/participant-id ?uuid]]
+                                      [?p :participant/participant_id ?uuid]]
                                     db uuid))))]
     ppt))
 
@@ -121,7 +121,7 @@
                         (build-txs part
                                    :db/add
                                    :participant
-                                   (into {:participant-id uuid} proto)))]
+                                   (into {:participant_id uuid} proto)))]
     [(:db-after tx) uuid]))
 
 (defn create-participant [conn study proto]
@@ -131,7 +131,7 @@
   "Returns all participants"
   [db]
   (map (fn [e] (d/entity db (first e)))
-       (d/q '[:find ?p :where [?p :participant/participant-id]] db)))
+       (d/q '[:find ?p :where [?p :participant/participant_id]] db)))
 
 (defn create-study
   "Creates study entity from a map, returns a vector of the form:
@@ -147,7 +147,7 @@
                        (build-txs :db.part/mea
                                   :db/add
                                   :study
-                                  {:name name :human-name name}))]
+                                  {:name name :human_name name}))]
     [(get tx :db-after) name]))
 
 (defn get-study

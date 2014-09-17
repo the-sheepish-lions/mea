@@ -4,7 +4,7 @@
   :db.install/_partition :db.part/db}]
 
 [:db/add #db/id[:db.part/mea -1] :study/keyword :grade]
-[:db/add #db/id[:db.part/mea -1] :study/human-name "GRADE"]
+[:db/add #db/id[:db.part/mea -1] :study/human_name "GRADE"]
 
 ;; The GRADE partition, entities, and participant attributes
 [{:db/id #db/id[:db.part/db]
@@ -30,28 +30,28 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/rand-date
+  :db/ident :grade/participant/rand_date
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The participant's randomization date for GRADE"
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/rand-group
+  :db/ident :grade/participant/rand_group
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The group the participant was randomized into for GRADE"
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/dx-date
+  :db/ident :grade/participant/dx_date
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The date the participant was diagnosed with diabetes"
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/init-metformin-dose
+  :db/ident :grade/participant/init_metformin_dose
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The participant's initial metformin dose at the time of screening"
@@ -60,29 +60,29 @@
 
 ;; some metrics to start with for GRADE
 [:db/add #db/id[:db.part/grade -1] :metric/name :a1c]
-[:db/add #db/id[:db.part/grade -2] :metric/human-name "HbA1c"]
+[:db/add #db/id[:db.part/grade -2] :metric/human_name "HbA1c"]
 [:db/add #db/id[:db.part/grade -3] :metric/unit "%"]
 
 [:db/add #db/id[:db.part/grade -4] :metric/name :serum-creatinine]
-[:db/add #db/id[:db.part/grade -5] :metric/human-name "Serum Creatinine"]
+[:db/add #db/id[:db.part/grade -5] :metric/human_name "Serum Creatinine"]
 [:db/add #db/id[:db.part/grade -6] :metric/unit "mg/dL"]
 
 [:db/add #db/id[:db.part/grade -7] :metric/name :urine-creatinine]
-[:db/add #db/id[:db.part/grade -8] :metric/human-name "Urine Creatinine"]
+[:db/add #db/id[:db.part/grade -8] :metric/human_name "Urine Creatinine"]
 [:db/add #db/id[:db.part/grade -9] :metric/unit "mg/dL"]
 
 [:db/add #db/id[:db.part/grade -10] :metric/name :height]
-[:db/add #db/id[:db.part/grade -11] :metric/human-name "Height"]
+[:db/add #db/id[:db.part/grade -11] :metric/human_name "Height"]
 [:db/add #db/id[:db.part/grade -12] :metric/unit "cm"]
 
 [:db/add #db/id[:db.part/grade -13] :metric/name :weight]
-[:db/add #db/id[:db.part/grade -14] :metric/human-name "Weight"]
+[:db/add #db/id[:db.part/grade -14] :metric/human_name "Weight"]
 [:db/add #db/id[:db.part/grade -15] :metric/unit "kg"]
 
 [:db/add #db/id[:db.part/grade -16] :metric/name :hip-circumference]
-[:db/add #db/id[:db.part/grade -17] :metric/human-name "Hip Circumference"]
+[:db/add #db/id[:db.part/grade -17] :metric/human_name "Hip Circumference"]
 [:db/add #db/id[:db.part/grade -18] :metric/unit "cm"]
 
 [:db/add #db/id[:db.part/grade -19] :metric/name :waist-circumference]
-[:db/add #db/id[:db.part/grade -20] :metric/human-name "Waist Circumference"]
+[:db/add #db/id[:db.part/grade -20] :metric/human_name "Waist Circumference"]
 [:db/add #db/id[:db.part/grade -21] :metric/unit "cm"]
