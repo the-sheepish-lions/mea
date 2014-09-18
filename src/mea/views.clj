@@ -21,10 +21,10 @@
       [:h1 "Welcome!"]
       [:small "This is the Mea Web Service Documentation"]]]]))
 
-(extent-type datomic.query.EntityMap
-  clojure.data.json/JSONWriter
-  (write- [this output]
-    ))
+(defn ppt->map
+  "Converts a participant entity map into a JSON serializable map."
+  [e]
+  {:id (.toString (core/id-of e)) :name (core/name-of e)})
 
 (defn json-response
   "A helper function for returning a JSON response"
@@ -41,7 +41,7 @@
 (defn list-participants
   "Return full participant listing as JSON"
   [page per-page]
-  (json-response (map (fn [e] {:id (.toString (core/id-of e)) :name (core/name-of e)})
+  (json-response (map ppt->map
                       (core/get-all-participants (core/get-db)))))
 
 (defn create-participant
@@ -49,7 +49,8 @@
    return a JSON string representation of of the participant"
   [body]
   (let [args (json/read-str body :key-fn (fn [k] (keyword k)))]
-    (json-response (core/create-participant core/conn :grade args))))
+    (json-response (map ppt->map
+                        (core/create-participant core/conn :grade args)))))
 
 (defn get-participant
   "Return the JSON representation of a participant"

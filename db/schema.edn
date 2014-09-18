@@ -56,6 +56,7 @@
    :db/ident :participant/sex
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
+   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   ;; sexes
@@ -66,24 +67,28 @@
    :db/ident :participant/address
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
+   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
    :db/ident :participant/phones
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/many
+   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
    :db/ident :participant/emails
    :db/valueType :db.type/reh
    :db/cardinality :db.cardinality/many
+   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
    :db/ident :participant/studies
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/many
+   :db/isComponent true
    :db/doc "A list of studies the particpant is a part of"
    :db.install/_attribute :db.part/db}
 
@@ -91,6 +96,7 @@
    :db/ident :participant/measurements
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/many
+   :db/isComponent true
    :db/doc "A list of measurements taken on the pariticpants"
    :db.install/_attribute :db.part/db}
 
@@ -172,12 +178,7 @@
    :db/ident :measurement/metric
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
-   :db.install/_attribute :db.part/db}
-
-  {:db/id #db/id[:db.part/db]
-   :db/ident :measurement/participant
-   :db/valueType :db.type/ref
-   :db/cardinality :db.cardinality/one
+   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
@@ -230,6 +231,7 @@
   :db/ident :event/type
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/one
+  :db/isComponent true
   :db.install/_attribute :db.part/db}
 
  ;; Event Types
@@ -250,6 +252,7 @@
   :db/ident :event/entity_types
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
+  :db/isComponent true
   :db/doc "Other types of entities that can be associated with this event type"
   :db.install/_attribute :db.part/db}
 
