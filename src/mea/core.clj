@@ -107,13 +107,13 @@
                                     db uuid))))]
     ppt))
 
-(defn add-participant
+(defn assert-participant
   "Builds participant entity from a map, adds the entity to, the database
    specified by the given connection, and returns the participant's UUID.
 
-   e.g. (add-participant conn
-                         :some-study
-                         {:first-name \"John\" :last-name \"Smith\"})"
+   e.g. (assert-participant conn
+                            :some-study
+                            {:first-name \"John\" :last-name \"Smith\"})"
   [conn study proto]
   (let [uuid (d/squuid)
         part (keyword "db.part.study" (name study))
@@ -125,7 +125,7 @@
     [(:db-after tx) uuid]))
 
 (defn create-participant [conn study proto]
-  (apply get-participant (add-participant conn study proto)))
+  (apply get-participant (assert-participant conn study proto)))
 
 (defn get-all-participants
   "Returns all participants"
@@ -133,26 +133,29 @@
   (map (fn [e] (d/entity db (first e)))
        (d/q '[:find ?p :where [?p :participant/participant_id]] db)))
 
-(defn create-study
+(defn assert-study
   "Creates study entity from a map, returns a vector of the form:
 
-       [db name]
+       [db keyword]
 
    where `db' is the updated database and `name' is the study's
-   keyword name.
+   keyword.
 
    e.g. (create-study conn :grade \"GRADE\")"
-  [conn name human-name]
+  [conn proto]
   (let [tx (d/transact conn
-                       (build-txs :db.part/mea
-                                  :db/add
-                                  :study
-                                  {:name name :human_name name}))]
-    [(get tx :db-after) name]))
+                       (build-txs :db.part/mea :db/add :study proto))]
+    (prn proto)
+    [(:db-after tx) (proto :keyword)]))
 
 (defn get-study
   "Find a study by it's keyword name, returns a dyanmic map
    of the given study's attribute or nil of the study cannot be found."
-  [db name]
-  (first (map (fn [eid] (d/entity db eid))
-              (first (d/q '[:find ?s :where [?s :study/keyword name]] db)))))
+  [db keyword]
+  (->> keyword
+       (d/q '[:find ?s :in $ ?kw :where [?s :study/keyword ?kw]] (get-db))
+       (map #(d/entity (get-db) (first %1)))
+       (first)))
+
+(defn create-study [conn proto]
+  (apply get-study (assert-study conn proto)))

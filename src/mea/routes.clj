@@ -8,8 +8,17 @@
 
 (defroutes main-routes
   (GET "/" [] (index-page))
-  (GET "/participants" [page per-page] (list-participants page per-page))
-  (POST "/participants" {body :body} (create-participant (slurp body)))
+
+  ;; participants
+  (POST "/participants" {params :params} (create-participant params))
+  (GET "/participants/:id" [id] (get-participant id))
+  ;(GET "/participants" [page per-page] (list-participants page per-page))
+  ;(GET "/participants/study/:study-name" [study-name] (list-participants page per-page))
+
+  ;; studies
+  (POST "/studies" {params :params}
+    (prn params)
+    (create-study params))
   (route/resources "/")
   (route/not-found "Page not found"))
 
