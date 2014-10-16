@@ -16,7 +16,6 @@
     (include-js "https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js")
     (include-js "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
     (include-js "/js/underscore-min.js")
-    ;(include-js "/js/underscore-min.map")
     (include-js "/js/jasmine/lib/jasmine-2.0.3/jasmine.js")
     (include-js "/js/jasmine/lib/jasmine-2.0.3/jasmine-html.js")
     (include-js "/js/jasmine/lib/jasmine-2.0.3/boot.js")

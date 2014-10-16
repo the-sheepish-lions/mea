@@ -1,0 +1,12 @@
+#!/bin/sh
+PROJECT_ROOT=/vagrant
+DATOMIC_DIR=$PROEJCT_ROOT/vendor/datomic-free-0.9.4880.6/
+
+cd $PROJECT_ROOT
+
+# start screen daemon
+screen -AdmS mea-dev -t shell bash
+
+echo "Setting up transactor..."
+echo screen -S mea-dev -X screen -t transactor $DATOMIC_DIR/bin/transactor $PROJECT_ROOT/config/transactor.properties && echo "DONE." && echo "Setting up development service..." && screen -t service lein ring server-headless && echo "DONE." && echo "Setting up development repl..." && screen -t repl lein repl && echo "DONE."
+#screen -r mea-dev -p shell

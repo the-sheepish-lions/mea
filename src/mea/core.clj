@@ -39,7 +39,6 @@
 (def db-uri (get datomic-config :datomic.uri))
 
 ;; setup && seed database
-;(setup-db (load-txs "db/schema.edn"))
 (if (d/create-database db-uri)
   (do
     (transact-all (d/connect db-uri) "db/schema.edn")
