@@ -30,10 +30,16 @@
 
 (defn e->map
   "Converts an entity map into a JSON serializable map."
-  [keys e]
-  (->> keys
-       (map (fn [k] {k (e k)})
-       (assoc {}))))
+  [ns ks e]
+  (->> ks
+      (map #(keyword (name ns) (name %1)))
+      (map (fn [k] {k (get e k)}))
+      (apply conj)))
+
+(defn write-json-uuid [x out]
+  (.print out (str "\"" x "\"")))
+
+(extend java.util.UUID json/JSONWriter {:-write write-json-uuid})
 
 (defn json-response
   "A helper function for returning a JSON response"
@@ -51,7 +57,7 @@
   "Return full participant listing as JSON"
   [page per-page]
   (->> (core/get-all-participants (core/get-db))
-       (map (fn [p] (e->map p [:id :first_name :last_name])))
+       (map (fn [p] (e->map :participant [:participant_id :first_name :last_name, :studies] p)))
        (json-response)))
 
 (defn create-participant
@@ -65,7 +71,23 @@
 (defn get-participant
   "Return the JSON representation of a participant"
   [id]
-  (json-response (ppt->map (core/get-participant id))))
+  (->> id
+       (java.util.UUID/fromString)
+       (core/get-participant (core/get-db))
+       (e->map :participant
+               [:participant_id
+                :vista_key
+                :vista_name
+                :first_name
+                :last_name
+                :middle_name
+                :studies
+                :dob
+                :sex
+                :address
+                :phones
+                :emails])
+       (json-response)))
 
 (defn create-study
   "Create a study with the given attributes
@@ -73,5 +95,12 @@
   [params]
   (->> {:keyword (keyword (params :keyword)) :human_name (params :human_name)}
        (core/create-study core/conn)
-       (e->map [:keyword :human_name])
+       (e->map :study [:keyword :human_name])
+       (json-response)))
+
+(defn list-studies
+  "Return full study listing as JSON"
+  [page per-page]
+  (->> (core/get-all-studies (core/get-db))
+       (map #(e->map :study [:keyword :human_name] %1))
        (json-response)))

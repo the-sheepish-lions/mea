@@ -140,7 +140,7 @@
    where `db' is the updated database and `name' is the study's
    keyword.
 
-   e.g. (create-study conn :grade \"GRADE\")"
+   e.g. (create-study conn {:keyword :grade :human_name \"GRADE\"})"
   [conn proto]
   (let [tx (d/transact conn
                        (build-txs :db.part/mea :db/add :study proto))]
@@ -158,3 +158,9 @@
 
 (defn create-study [conn proto]
   (apply get-study (assert-study conn proto)))
+
+(defn get-all-studies
+  "Returns all studies"
+  [db]
+  (map (fn [e] (d/entity db (first e)))
+       (d/q '[:find ?p :where [?p :study/keyword]] db)))
