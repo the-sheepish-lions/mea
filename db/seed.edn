@@ -1,20 +1,47 @@
-;; a partition for global entities like Studies
-[{:db/id #db/id[:db.part/db -1]
-  :db/ident :db.part/mea
-  :db.install/_partition :db.part/db}]
+;; some studies
+[
+  [:db/add #db/id[:db.part/mea -2] :study/keyword :grade]
+  [:db/add #db/id[:db.part/mea -2] :study/name "GRADE"]
 
-[:db/add #db/id[:db.part/mea -1] :study/keyword :grade]
-[:db/add #db/id[:db.part/mea -1] :study/human_name "GRADE"]
+  [:db/add #db/id[:db.part/mea -3] :study/keyword :confirm]
+  [:db/add #db/id[:db.part/mea -3] :study/name "CONFIRM"]
+]
+
+;; VistA Attributes
+[
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/vista/name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/unique :db.unique/identity
+   :db/fulltext true
+   :db/doc "The patient's name as seen in VistA (unique, upsertable)"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/vista/patient_key
+   :db/valueType :db.type/long
+   :db/cardinality :db.cardinality/one
+   :db/unique :db.unique/value
+   :db/doc "The unique value of PATIENT.PATIENT_KEY from the VistA datawarehouse"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/vista/f1u4n
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "The value of PATIENT.f1u4n from the VistA datawarehouse"
+   :db.install/_attribute :db.part/db}
+]
 
 ;; The GRADE partition, entities, and participant attributes
-[{:db/id #db/id[:db.part/db]
-  :db/ident :db.part.study/grade
-  :db.install/_partition :db.part/db}]
-
-;; GRADE participant attributes and entities
 [
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/pid
+  :db/ident :db.part.study/grade
+  :db.install/_partition :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :ppt/grade/pid
   :db/valueType :db.type/string
   :db/cardinality :db.cardinality/one
   :db/unique :db.unique/value
@@ -22,7 +49,7 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/gcode
+  :db/ident :ppt/grade/gcode
   :db/valueType :db.type/string
   :db/cardinality :db.cardinality/one
   :db/unique :db.unique/value
@@ -30,28 +57,34 @@
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/rand_date
+  :db/ident :ppt/grade/rand_date
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The participant's randomization date for GRADE"
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/rand_group
-  :db/valueType :db.type/instant
+  :db/ident :ppt/grade/rand_group
+  :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/one
   :db/doc "The group the participant was randomized into for GRADE"
   :db.install/_attribute :db.part/db}
 
+  ;; study groups
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/glargine]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/sitagliptin]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/liraglutide]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/glimepiride]
+
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/dx_date
+  :db/ident :ppt/grade/dx_date
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The date the participant was diagnosed with diabetes"
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :grade/participant/init_metformin_dose
+  :db/ident :ppt/grade/init_metformin_dose
   :db/valueType :db.type/instant
   :db/cardinality :db.cardinality/one
   :db/doc "The participant's initial metformin dose at the time of screening"
@@ -59,30 +92,65 @@
 ]
 
 ;; some metrics to start with for GRADE
-[:db/add #db/id[:db.part/grade -1] :metric/name :a1c]
-[:db/add #db/id[:db.part/grade -2] :metric/human_name "HbA1c"]
-[:db/add #db/id[:db.part/grade -3] :metric/unit "%"]
+[
+  [:db/add #db/id[:db.part.study/grade -1] :metric/keyword :a1c]
+  [:db/add #db/id[:db.part.study/grade -1] :metric/name "HbA1c"]
+  [:db/add #db/id[:db.part.study/grade -1] :metric/unit "%"]
+  
+  [:db/add #db/id[:db.part.study/grade -2] :metric/keyword :serum-creatinine]
+  [:db/add #db/id[:db.part.study/grade -2] :metric/name "Serum Creatinine"]
+  [:db/add #db/id[:db.part.study/grade -2] :metric/unit "mg/dL"]
+  
+  [:db/add #db/id[:db.part.study/grade -3] :metric/keyword :urine-creatinine]
+  [:db/add #db/id[:db.part.study/grade -3] :metric/name "Urine Creatinine"]
+  [:db/add #db/id[:db.part.study/grade -3] :metric/unit "mg/dL"]
+  
+  [:db/add #db/id[:db.part.study/grade -4] :metric/keyword :height]
+  [:db/add #db/id[:db.part.study/grade -4] :metric/name "Height"]
+  [:db/add #db/id[:db.part.study/grade -4] :metric/unit "cm"]
+  
+  [:db/add #db/id[:db.part.study/grade -5] :metric/keyword :weight]
+  [:db/add #db/id[:db.part.study/grade -5] :metric/name "Weight"]
+  [:db/add #db/id[:db.part.study/grade -5] :metric/unit "kg"]
+  
+  [:db/add #db/id[:db.part.study/grade -6] :metric/keyword :hip-circumference]
+  [:db/add #db/id[:db.part.study/grade -6] :metric/name "Hip Circumference"]
+  [:db/add #db/id[:db.part.study/grade -6] :metric/unit "cm"]
+  
+  [:db/add #db/id[:db.part.study/grade -7] :metric/keyword :waist-circumference]
+  [:db/add #db/id[:db.part.study/grade -7] :metric/name "Waist Circumference"]
+  [:db/add #db/id[:db.part.study/grade -7] :metric/unit "cm"]
+]
 
-[:db/add #db/id[:db.part/grade -4] :metric/name :serum-creatinine]
-[:db/add #db/id[:db.part/grade -5] :metric/human_name "Serum Creatinine"]
-[:db/add #db/id[:db.part/grade -6] :metric/unit "mg/dL"]
+;; The CONFIRM partition, entities, and participant attributes
+[
+ {:db/id #db/id[:db.part/db]
+  :db/ident :db.part.study/confirm
+  :db.install/_partition :db.part/db}
 
-[:db/add #db/id[:db.part/grade -7] :metric/name :urine-creatinine]
-[:db/add #db/id[:db.part/grade -8] :metric/human_name "Urine Creatinine"]
-[:db/add #db/id[:db.part/grade -9] :metric/unit "mg/dL"]
+ {:db/id #db/id[:db.part/db]
+  :db/ident :ppt/confirm/pid
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db/unique :db.unique/value
+  :db/doc "A CONFIRM participants unique participant ID"
+  :db.install/_attribute :db.part/db}
 
-[:db/add #db/id[:db.part/grade -10] :metric/name :height]
-[:db/add #db/id[:db.part/grade -11] :metric/human_name "Height"]
-[:db/add #db/id[:db.part/grade -12] :metric/unit "cm"]
+ {:db/id #db/id[:db.part/db]
+  :db/ident :ppt/confirm/rand_date
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db/doc "The participant's randomization date for CONFIRM"
+  :db.install/_attribute :db.part/db}
 
-[:db/add #db/id[:db.part/grade -13] :metric/name :weight]
-[:db/add #db/id[:db.part/grade -14] :metric/human_name "Weight"]
-[:db/add #db/id[:db.part/grade -15] :metric/unit "kg"]
+ {:db/id #db/id[:db.part/db]
+  :db/ident :ppt/confirm/rand_group
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db/doc "The group the participant was randomized into for CONFIRM"
+  :db.install/_attribute :db.part/db}
 
-[:db/add #db/id[:db.part/grade -16] :metric/name :hip-circumference]
-[:db/add #db/id[:db.part/grade -17] :metric/human_name "Hip Circumference"]
-[:db/add #db/id[:db.part/grade -18] :metric/unit "cm"]
-
-[:db/add #db/id[:db.part/grade -19] :metric/name :waist-circumference]
-[:db/add #db/id[:db.part/grade -20] :metric/human_name "Waist Circumference"]
-[:db/add #db/id[:db.part/grade -21] :metric/unit "cm"]
+  ;; study groups
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/fit]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.rand_group/colonoscopy]
+]

@@ -27,27 +27,27 @@
    resource that can be opened by io/reader."
   [conn f]
   (doseq [txd (read-all f)]
-    (d/transact conn txd))
+    @(d/transact conn txd))
   :done)
 
-(defn setup-db [db-uri schema-txs]
-  (do
-    (d/create-database db-uri)
-    (d/transact (d/connect db-uri) schema-txs)))
+(defn setup-db [db-uri]
+  (if (d/create-database db-uri)
+    (do
+      (transact-all (d/connect db-uri) "db/schema.edn")
+      (transact-all (d/connect db-uri) "db/seed.edn")
+      :done)
+    :already-setup))
 
 (def datomic-config (load-config "config/peer.properties"))
 (def db-uri (get datomic-config :datomic.uri))
 
 ;; setup && seed database
-(if (d/create-database db-uri)
-  (do
-    (transact-all (d/connect db-uri) "db/schema.edn")
-    (transact-all (d/connect db-uri) "db/seed.edn")))
+(setup-db db-uri)
 
 ;; our database connection
-(def conn (d/connect db-uri))
+(defn get-conn [] (d/connect db-uri))
 
-(defn get-db [] (d/db conn))
+(defn get-db [] (d/db (get-conn)))
 
 (defn build-txs
   "Converts a namespace (keyword) and a map into a vector of vector assertions.
@@ -57,110 +57,149 @@
                   :db/add
                   :participant
                   {:first-name \"Peter\" :last-name \"Parker\"})"
-  [part tx ns m]
-  (let [id (d/tempid part)
-        ks (keys m)
-        make-tx (fn [k] [tx id (keyword (name ns) (name k)) (get m k)])]
-    (vec (map make-tx ks))))
+  [{:keys [part tx ns proto eid]}]
+  (let [id (if (nil? eid) (d/tempid part) eid)
+        make-tx (fn [kv]
+                  (let [k (first kv)
+                        kn (name k)
+                        kns (namespace k)]
+                    (if (nil? kns)
+                      [tx id (keyword (name ns) kn) (second kv)]
+                      [tx id (keyword (name ns) (str kns "/" kn)) (second kv)])))]
+    (vec (map make-tx proto))))
 
-(defn entity-dispatch [e]
-  (cond (contains? e :participant/participant_id) ::participant
-        (contains? e :study/keyword) ::study
-        (contains? e :metric/name) ::metric
-        (contains? e :measurement/metric) ::measurement))
+(defmulti get-ppt
+  "Find a participant by it's UUID or Entity ID,
+   returns the participants Entity Map"
+  (fn [db id] (class id)))
+(defmethod get-ppt java.lang.Long [db id] (d/entity db id))
+(defmethod get-ppt java.util.UUID [db uuid]
+  (->> (d/entid db [:ppt/ppt_id uuid])
+       (get-ppt db)))
 
-(defmulti id-of entity-dispatch)
-(defmethod id-of nil [e] nil)
-(defmethod id-of ::study [e] (get e :study/keyword))
-(defmethod id-of ::metric [e] (get e :metric/name))
-(defmethod id-of ::participant [e] (get e :participant/participant_id))
+(defn assert-entity
+  "Builds an entity from a map, adds the entity to the database
+   specified by the given connection, and returns the transaction map.
 
-(defmulti name-of entity-dispatch)
-(defmethod name-of nil [e] "")
-(defmethod name-of ::study [e] (get e :study/keyword))
-(defmethod name-of ::metric [e] (get e :metric/name))
-(defmethod name-of ::measurement [e]
-  (str (name-of (get e :measurement/participant))
-       " "
-       (name-of (get e :measurement/metric))))
-(defmethod name-of ::participant [e]
-  (str (get e :participant/first_name) " " (get e :participant/last_name)))
+   e.g. (assert-entity conn
+                       :db.part/mea
+                       :ppt
+                       {:first-name \"John\" :last-name \"Smith\"})"
+  [conn part ns proto]
+  @(->> (build-txs {:part part
+                    :tx :db/add
+                    :ns ns
+                    :proto proto})
+        (d/transact conn)))
 
-(defmulti human-name-of entity-dispatch)
-(defmethod human-name-of nil [e] "")
-(defmethod human-name-of ::study [e] (get e :study/human_name))
-(defmethod human-name-of ::metric [e] (get e :metric/human_name))
-(defmethod human-name-of ::measurement [e] (name-of e))
-(defmethod human-name-of ::participant [e] (name-of e))
+(defn assert-to-entity
+  "Builds an entity from a map, adds the entity to the database
+   specified by the given connection, and returns the transaction map.
 
-(defn get-participant
-  "Find a participant by it's UUID, returns a dynamic map
-   of the given participant's attributes or nil if the
-   participant cannot be found"
-  [db uuid]
-  (let [ppt (first (map (fn [eid] (d/entity db eid))
-                        (first (d/q '[:find ?p
-                                      :in $ ?uuid
-                                      :where
-                                      [?p :participant/participant_id ?uuid]]
-                                    db uuid))))]
-    ppt))
+   e.g. (assert-entity conn
+                       [:study/keyword :some-study]
+                       :study
+                       {:ppts [ppt/ppt_id #uuid \"54495d71-780a-4cf5-a97a-f25d05ed2df4\"]})"
+  [conn eid ns proto]
+  @(->> (build-txs {:eid eid
+                    :tx :db/add
+                    :ns ns
+                    :proto proto})
+        (d/transact conn)))
 
-(defn assert-participant
+(defn assert-ppt
   "Builds participant entity from a map, adds the entity to, the database
-   specified by the given connection, and returns the participant's UUID.
+   specified by the given connection, and returns a vector of the form.
 
-   e.g. (assert-participant conn
-                            :some-study
-                            {:first-name \"John\" :last-name \"Smith\"})"
+   e.g. (assert-ppt conn
+                    :some-study
+                    {:first-name \"John\" :last-name \"Smith\"})"
   [conn study proto]
-  (let [uuid (d/squuid)
-        part (keyword "db.part.study" (name study))
-        tx @(d/transact conn
-                        (build-txs part
-                                   :db/add
-                                   :participant
-                                   (into {:participant_id uuid} proto)))]
+  (let [part (keyword "db.part.study" (name study))
+        uuid (d/squuid)
+        tx (->> (into {:ppt_id uuid} proto)
+                (assert-entity conn part :ppt))]
     [(:db-after tx) uuid]))
 
-(defn create-participant [conn study proto]
-  (apply get-participant (assert-participant conn study proto)))
+(defn bless-into-study
+  "Associate a participant with a study"
+  [conn study ppt]
+  (assert-to-entity conn
+                    [:study/keyword study]
+                    :study
+                    {:ppts (:db/id ppt)}))
 
-(defn get-all-participants
-  "Returns all participants"
-  [db]
-  (map (fn [e] (d/entity db (first e)))
-       (d/q '[:find ?p :where [?p :participant/participant_id]] db)))
+(defn create-ppt
+  "The application of `assert-ppt`, `get-ppt` and `bless-into-study`
+   returns the result of get-ppt."
+  [conn study proto]
+  (let [ppt (apply get-ppt (assert-ppt conn study proto))]
+    (bless-into-study conn study ppt)
+    ppt))
+
+(defn get-all-entities
+  "Reterns all entities with a given attribute"
+  [db attr]
+  (->> (d/q '[:find ?e :in $ ?attr :where [?e ?attr]], db attr)
+       (map #(d/entity db (first %1)))))
 
 (defn assert-study
   "Creates study entity from a map, returns a vector of the form:
 
        [db keyword]
 
-   where `db' is the updated database and `name' is the study's
+   where `db' is the updated database and `keyword' is the study's
    keyword.
 
    e.g. (create-study conn {:keyword :grade :human_name \"GRADE\"})"
   [conn proto]
-  (let [tx (d/transact conn
-                       (build-txs :db.part/mea :db/add :study proto))]
-    (prn proto)
-    [(:db-after tx) (proto :keyword)]))
+  (if (contains? proto :keyword)
+    (let [tx (assert-entity conn :db.part/mea :study proto)]
+      [(:db-after tx) (:keyword proto)])
+    (throw (Exception. "a keyword is required"))))
 
 (defn get-study
   "Find a study by it's keyword name, returns a dyanmic map
    of the given study's attribute or nil of the study cannot be found."
-  [db keyword]
-  (->> keyword
-       (d/q '[:find ?s :in $ ?kw :where [?s :study/keyword ?kw]] (get-db))
-       (map #(d/entity (get-db) (first %1)))
-       (first)))
+  [db kw]
+  (->> (d/entid db [:study/keyword kw])
+       (d/entity db)))
 
-(defn create-study [conn proto]
+(defn create-study
+  "The application of `assert-study` to `get-study`"
+  [conn proto]
   (apply get-study (assert-study conn proto)))
 
 (defn get-all-studies
   "Returns all studies"
   [db]
-  (map (fn [e] (d/entity db (first e)))
-       (d/q '[:find ?p :where [?p :study/keyword]] db)))
+  (get-all-entities db :study/keyword))
+
+(defn get-study-part
+  "Return the datomic partition that corresponds to the study"
+  [db study]
+  (->> [:study/keyword study]
+       (d/entid db)
+       (d/part)
+       (d/entity db)))
+
+(defn get-all-ppts
+  "Returns all participants"
+  [db & [study]]
+  (if (nil? study)
+    (get-all-entities db :ppt/ppt_id)
+    (:study/ppts (get-study db study))))
+
+(defn get-ppt-from-study
+  "Returns ppt based on UUID if they are in the given study returns nil otherwise"
+  [db study uuid]
+  (->> (d/q '[:find ?e ?s
+              :in $ ?study ?uuid
+              :where
+              [?e :ppt/ppt_id ?uuid]
+              [?s :study/keyword ?study]
+              [?s :study/ppts ?e]] db study uuid)
+       (first)
+       (first)
+       (d/entity db)))
+

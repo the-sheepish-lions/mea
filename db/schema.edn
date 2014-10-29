@@ -1,7 +1,12 @@
+;; a partition for global common entities
+[{:db/id #db/id[:db.part/db -1]
+  :db/ident :db.part/mea
+  :db.install/_partition :db.part/db}]
+
 [
  ;; Participants
  {:db/id #db/id[:db.part/db]
-   :db/ident :participant/participant_id
+   :db/ident :ppt/ppt_id
    :db/valueType :db.type/uuid
    :db/cardinality :db.cardinality/one
    :db/unique :db.unique/value
@@ -9,95 +14,70 @@
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/vista_name
-   :db/valueType :db.type/string
-   :db/cardinality :db.cardinality/one
-   :db/unique :db.unique/identity
-   :db/fulltext true
-   :db/doc "The patient's name as seen in VistA (unique, upsertable)"
-   :db.install/_attribute :db.part/db}
-
-  {:db/id #db/id[:db.part/db]
-   :db/ident :participant/vista_key
-   :db/valueType :db.type/long
-   :db/cardinality :db.cardinality/one
-   :db/unique :db.unique/value
-   :db/doc "The unique value of PATIENT.PATIENT_KEY from the VistA datawarehouse"
-   :db.install/_attribute :db.part/db}
-
-  {:db/id #db/id[:db.part/db]
-   :db/ident :participant/first_name
+   :db/ident :ppt/first_name
    :db/valueType :db.type/string
    :db/cardinality :db.cardinality/one
    :db/index true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/last_name
+   :db/ident :ppt/last_name
    :db/valueType :db.type/string
    :db/cardinality :db.cardinality/one
    :db/index true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/middle_name
+   :db/ident :ppt/middle_name
    :db/valueType :db.type/string
    :db/cardinality :db.cardinality/one
    :db/index true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/dob
+   :db/ident :ppt/dob
    :db/valueType :db.type/instant
    :db/cardinality :db.cardinality/one
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/sex
+   :db/ident :ppt/sex
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
    :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   ;; sexes
-  [:db/add #db/id[:db.part/user] :db/ident :participant.sex/male]
-  [:db/add #db/id[:db.part/user] :db/ident :participant.sex/female]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.sex/male]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.sex/female]
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/address
+   :db/ident :ppt/address
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
    :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/phones
+   :db/ident :ppt/phones
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/many
    :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/emails
-   :db/valueType :db.type/ref
-   :db/cardinality :db.cardinality/many
+   :db/ident :ppt/emails
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
    :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :participant/studies
+   :db/ident :ppt/measurements
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/many
    :db/isComponent true
-   :db/doc "A list of studies the particpant is a part of"
-   :db.install/_attribute :db.part/db}
-
-  {:db/id #db/id[:db.part/db]
-   :db/ident :participant/measurements
-   :db/valueType :db.type/ref
-   :db/cardinality :db.cardinality/many
-   :db/isComponent true
-   :db/doc "A list of measurements taken on the pariticpants"
+   :db/doc "A list of measurements taken on the participants"
    :db.install/_attribute :db.part/db}
 
   ;; Phones
@@ -113,19 +93,6 @@
    :db/cardinality :db.cardinality/one
    :db.install/_attribute :db.part/db}
 
-  ;; Emails
-  {:db/id #db/id[:db.part/db]
-   :db/ident :email/name
-   :db/valueType :db.type/keyword
-   :db/cardinality :db.cardinality/one
-   :db.install/_attribute :db.part/db}
-
-  {:db/id #db/id[:db.part/db]
-   :db/ident :email/value
-   :db/valueType :db.type/string
-   :db/cardinality :db.cardinality/one
-   :db.install/_attribute :db.part/db}
-
   ;; Studies
   {:db/id #db/id[:db.part/db]
    :db/ident :study/keyword
@@ -136,21 +103,29 @@
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :study/human_name
+   :db/ident :study/name
    :db/valueType :db.type/string
    :db/cardinality :db.cardinality/one
    :db/doc "A more user friendly name"
    :db.install/_attribute :db.part/db}
 
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/ppts
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db/doc "The participants in the study"
+   :db.install/_attribute :db.part/db}
+
   ;; Metrics (Types of measurements)
   {:db/id #db/id[:db.part/db]
-   :db/ident :metric/name
+   :db/ident :metric/keyword
    :db/valueType :db.type/keyword
    :db/cardinality :db.cardinality/one
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
-   :db/ident :metric/human_name
+   :db/ident :metric/name
    :db/valueType :db.type/string
    :db/cardinality :db.cardinality/one
    :db.install/_attribute :db.part/db}
@@ -178,7 +153,6 @@
    :db/ident :measurement/metric
    :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
-   :db/isComponent true
    :db.install/_attribute :db.part/db}
 
   {:db/id #db/id[:db.part/db]
@@ -190,6 +164,12 @@
   {:db/id #db/id[:db.part/db]
    :db/ident :measurement/value
    :db/valueType :db.type/double
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :measurement/study
+   :db/valueType :db.type/ref
    :db/cardinality :db.cardinality/one
    :db.install/_attribute :db.part/db}
 ]
@@ -231,19 +211,18 @@
   :db/ident :event/type
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/one
-  :db/isComponent true
   :db.install/_attribute :db.part/db}
 
  ;; Event Types
  {:db/id #db/id[:db.part/db]
-  :db/ident :event/name
+  :db/ident :event/keyword
   :db/valueType :db.type/keyword
   :db/cardinality :db.cardinality/one
   :db/unique :db.unique/value
   :db.install/_attribute :db.part/db}
 
  {:db/id #db/id[:db.part/db]
-  :db/ident :event/human_name
+  :db/ident :event/name
   :db/valueType :db.type/string
   :db/cardinality :db.cardinality/one
   :db.install/_attribute :db.part/db}
@@ -252,7 +231,6 @@
   :db/ident :event/entity_types
   :db/valueType :db.type/ref
   :db/cardinality :db.cardinality/many
-  :db/isComponent true
   :db/doc "Other types of entities that can be associated with this event type"
   :db.install/_attribute :db.part/db}
 

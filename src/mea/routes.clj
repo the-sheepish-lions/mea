@@ -2,7 +2,8 @@
   (:use compojure.core
         mea.views
         [hiccup.middleware :only (wrap-base-url)])
-  (:require [compojure.route :as route]
+  (:require [clojure.data.json :as json]
+            [compojure.route :as route]
             [compojure.handler :as handler]
             [compojure.response :as response]))
 
@@ -10,15 +11,19 @@
   (GET "/" [] (index-page))
 
   ;; participants
-  (POST "/participants" {params :params}
-        (create-participant params))
+  (POST "/:study/patients" request
+        ;;(prn (read-json-request request))
+        (let [{study :study proto :participant} (read-json-request request)]
+          (prn study)
+          (prn proto)
+          (create-ppt (keyword study) proto)))
 
-  (GET "/participants/:id" [id]
-       (get-participant id))
+  (GET "/:study/patients/:id" [study id]
+       (get-ppt (keyword study) id))
 
-  (GET "/participants" {params :params}
+  (GET "/:study/patients" {params :params}
        (prn params)
-       (list-participants (params :page) (params :per-page)))
+       (list-ppts (keyword (params :study)) (params :page) (params :per-page)))
 
   ;; studies
   (POST "/studies" {params :params}
