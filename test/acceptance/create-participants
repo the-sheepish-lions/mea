@@ -1,4 +1,4 @@
 #!/bin/sh
-curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Peter", "last_name": "Parker"}' http://localhost:3000/participants
-curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Bruce", "last_name": "Banner"}' http://localhost:3000/participants
-curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Tony", "last_name": "Stark"}' http://localhost:3000/participants
+curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Peter", "last_name": "Parker"}' http://localhost:3000/grade/participants
+curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Bruce", "last_name": "Banner"}' http://localhost:3000/grade/participants
+curl -X POST -H "Content-type: application/json" --data-binary '{"first_name": "Tony", "last_name": "Stark"}' http://localhost:3000/grade/participants

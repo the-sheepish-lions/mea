@@ -12,11 +12,9 @@
 
   ;; participants
   (POST "/:study/patients" request
-        ;;(prn (read-json-request request))
-        (let [{study :study proto :participant} (read-json-request request)]
-          (prn study)
-          (prn proto)
-          (create-ppt (keyword study) proto)))
+        ;; WARNING: be careful with this, request body is mutable and returns empty after one read! (prn (read-json-request request))
+        (let [{params :params} request {proto :ppt} (read-json-request request)]
+          (create-ppt (keyword (:study params)) proto)))
 
   (GET "/:study/patients/:id" [study id]
        (get-ppt (keyword study) id))

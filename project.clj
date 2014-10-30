@@ -14,7 +14,8 @@
                  [ring/ring-jetty-adapter "1.3.1"]
                  [ch.qos.logback/logback-classic "1.1.2" :exclusions [org.slf4j/slf4j-api]]
                  [datomic-schema-grapher "0.0.1"]
-                 [prismatic/schema "0.3.1"]]
+                 [prismatic/schema "0.3.1"]
+                 [cheshire "5.3.1"]]
   :bower-dependencies [[bootstrap "2.3.1"]
                        [jasmine "2.0.0"]]
   :bower {:directory "resources/js-lib"}
