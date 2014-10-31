@@ -53,20 +53,12 @@
   "Converts a namespace (keyword) and a map into a vector of vector assertions.
    This is used internally by entity constructors e.g. `create-participant'.
 
-   e.g. (map->txs :db.part/grade
-                  :db/add
-                  :participant
-                  {:first-name \"Peter\" :last-name \"Parker\"})"
-  [{:keys [part tx ns proto eid]}]
-  (let [id (if (nil? eid) (d/tempid part) eid)
-        make-tx (fn [kv]
-                  (let [k (first kv)
-                        kn (name k)
-                        kns (namespace k)]
-                    (if (nil? kns)
-                      [tx id (keyword (name ns) kn) (second kv)]
-                      [tx id (keyword (name ns) (str kns "/" kn)) (second kv)])))]
-    (vec (map make-tx proto))))
+   e.g. (build-txs :db.part/grade
+                   :db/add
+                   {:ppt/first-name \"Peter\" :ppt/last-name \"Parker\"})"
+  [{:keys [part tx proto eid]}]
+  (let [id (if (nil? eid) (d/tempid part) eid)]
+    (vec (map (fn [kv] [tx id (first kv) (second kv)]) proto))))
 
 (defmulti get-ppt
   "Find a participant by it's UUID or Entity ID,
@@ -83,12 +75,10 @@
 
    e.g. (assert-entity conn
                        :db.part/mea
-                       :ppt
-                       {:first-name \"John\" :last-name \"Smith\"})"
-  [conn part ns proto]
+                       {:ppt/first-name \"John\" :ppt/last-name \"Smith\"})"
+  [conn part proto]
   @(->> (build-txs {:part part
                     :tx :db/add
-                    :ns ns
                     :proto proto})
         (d/transact conn)))
 
@@ -96,14 +86,12 @@
   "Builds an entity from a map, adds the entity to the database
    specified by the given connection, and returns the transaction map.
 
-   e.g. (assert-entity conn
-                       [:study/keyword :some-study]
-                       :study
-                       {:ppts [ppt/ppt_id #uuid \"54495d71-780a-4cf5-a97a-f25d05ed2df4\"]})"
-  [conn eid ns proto]
+   e.g. (assert-to-entity conn
+                          [:study/keyword :some-study]
+                          {:study/ppts [:ppt/ppt_id #uuid \"54495d71-780a-4cf5-a97a-f25d05ed2df4\"]})"
+  [conn eid proto]
   @(->> (build-txs {:eid eid
                     :tx :db/add
-                    :ns ns
                     :proto proto})
         (d/transact conn)))
 
@@ -113,12 +101,12 @@
 
    e.g. (assert-ppt conn
                     :some-study
-                    {:first-name \"John\" :last-name \"Smith\"})"
+                    {:ppt/first-name \"John\" :ppt/last-name \"Smith\"})"
   [conn study proto]
   (let [part (keyword "db.part.study" (name study))
         uuid (d/squuid)
-        tx (->> (into {:ppt_id uuid} proto)
-                (assert-entity conn part :ppt))]
+        tx (->> (into {:ppt/ppt_id uuid} proto)
+                (assert-entity conn part))]
     [(:db-after tx) uuid]))
 
 (defn bless-into-study
@@ -126,8 +114,7 @@
   [conn study ppt]
   (assert-to-entity conn
                     [:study/keyword study]
-                    :study
-                    {:ppts (:db/id ppt)}))
+                    {:study/ppts (:db/id ppt)}))
 
 (defn create-ppt
   "The application of `assert-ppt`, `get-ppt` and `bless-into-study`

@@ -28,8 +28,7 @@
 (defn e->map
   "Converts an entity map into a JSON serializable map."
   [e ks]
-  (->> (map (fn [k] {k (get e k)}) ks)
-       ((partial conj []))))
+  (map (fn [k] {k (get e k)}) ks))
 
 (defn write-transit-str [value]
   (let [io (java.io.ByteArrayOutputStream. 4096)
@@ -38,18 +37,9 @@
     (.toString io)))
 
 (defn read-transit-str [s]
-  (let [io (java.io.ByteArrayInputStream. 4096)
+  (let [io (java.io.StringBufferInputStream. s)
         r (transit/reader io :json)]
-    (prn s)
     (transit/read r)))
-
-(defn read-json-request
-  "Parses JSON string from request body and returns a clojure map"
-  [request]
-  (-> (get request :body)
-      (slurp)
-      ((fn [m] (prn m) m))
-      (read-transit-str)))
 
 (defn json-response
   "A helper function for returning a JSON response"
@@ -70,7 +60,7 @@
   "Return full participant listing as JSON"
   [study page per-page]
   (->> (core/get-all-ppts (core/get-db) study)
-       (map #(e->map [:ppt/vista/name :ppt/vista/patient_key :ppt/dob :ppt/first_name :ppt/last_name] %1))
+       (map #(e->map %1 [:ppt/vista/name :ppt/vista/patient_key :ppt/dob :ppt/first_name :ppt/last_name :ppt/ppt_id]))
        ((fn [m] (prn m) m))
        (json-response)))
 
@@ -90,7 +80,7 @@
   (let [ppt (core/get-ppt-from-study (core/get-db) study (java.util.UUID/fromString id))]
     (if (nil? ppt)
       (json-response {:type "error" :msg (str "Couldn't find patient " id " within the " study " study.")})
-      (-> (e->map :ppt (keys ppt) ppt)
+      (-> (e->map ppt (keys ppt))
           ;(nest-namespaced-keys)
           (json-response)))))
 
@@ -100,12 +90,12 @@
   [params]
   (->> {:keyword (keyword (params :keyword)) :name (params :name)}
        (core/create-study (core/get-conn))
-       (e->map :study [:keyword :name])
+       (e->map [:study/keyword :study/name])
        (json-response)))
 
 (defn list-studies
   "Return full study listing as JSON"
   [page per-page]
   (->> (core/get-all-studies (core/get-db))
-       (map #(e->map :study [:keyword :name] %1))
+       (map #(e->map [:study/keyword :study/name] %1))
        (json-response)))

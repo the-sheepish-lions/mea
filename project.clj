@@ -22,7 +22,7 @@
   :bower {:directory "resources/js-lib"}
   :ring {:handler mea.routes/app}
   :min-lein-version "2.0.0"
-  :main mea.core
+  ;:main mea.core
   :resource-paths ["config", "resources"]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-devel "1.3.1"]]}}

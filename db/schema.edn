@@ -117,6 +117,37 @@
    :db/doc "The participants in the study"
    :db.install/_attribute :db.part/db}
 
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/attributes
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db/doc "Attributes that can be added to participants in the study"
+   :db.install/_attribute :db.part/db}
+
+  ;; Study Attributes
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/keyword
+   :db/unique :db.unique/value
+   :db/valueType :db.type/keyword
+   :db/cardinality :db.cardinality/one
+   :db/doc "Attributes that can be added to participants in the study"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "The name of the study attribute to be used in UI"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/description
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "A description of the study attribute"
+   :db.install/_attribute :db.part/db}
+
   ;; Metrics (Types of measurements)
   {:db/id #db/id[:db.part/db]
    :db/ident :metric/keyword

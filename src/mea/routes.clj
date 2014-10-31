@@ -8,13 +8,13 @@
             [compojure.response :as response]))
 
 (defroutes main-routes
-  (GET "/" [] (index-page))
-
   ;; participants
   (POST "/:study/patients" request
         ;; WARNING: be careful with this, request body is mutable and returns empty after one read! (prn (read-json-request request))
-        (let [{params :params} request {proto :ppt} (read-json-request request)]
-          (create-ppt (keyword (:study params)) proto)))
+        (let [{params :params} request
+              proto (read-transit-str (slurp (get request :body)))]
+          (create-ppt (keyword (:study params)) proto)
+          ))
 
   (GET "/:study/patients/:id" [study id]
        (get-ppt (keyword study) id))
@@ -24,11 +24,11 @@
        (list-ppts (keyword (params :study)) (params :page) (params :per-page)))
 
   ;; studies
-  (POST "/studies" {params :params}
+  (POST "/" {params :params}
     (prn params)
     (create-study params))
 
-  (GET "/studies" {params :params} ; {{page :page per-page :per-page} :params}
+  (GET "/" {params :params} ; {{page :page per-page :per-page} :params}
        (prn params)
        (list-studies (params :page) (params :per-page)))
 
