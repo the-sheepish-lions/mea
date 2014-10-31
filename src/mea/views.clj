@@ -1,7 +1,7 @@
 (ns mea.views
   (:use [hiccup core page]
         [clojure.walk])
-  (:require [cheshire.core :as json]
+  (:require [cognitect.transit :as transit]
             [mea.core :as core]
             [schema.core :as s]))
 
@@ -27,76 +27,39 @@
 
 (defn e->map
   "Converts an entity map into a JSON serializable map."
-  [ns ks e]
-  (->> (map #(keyword (name ns) (name %1)) ks)
-       (map (fn [k] {k (get e k)}))
+  [e ks]
+  (->> (map (fn [k] {k (get e k)}) ks)
        ((partial conj []))))
 
-;(defn pad-zeros [n]
-;  (if (> n 9)
-;    (str n)
-;    (str "0" n)))
-;
-;(defn write-json-uuid [x out]
-;  (.print out (str "\"" x "\"")))
-;
-;(defn write-json-ie-date [x out]
-;  (.print out
-;          (str "\"" (+ 1900 (.getYear x)) "-" (+ 1 (.getMonth x)) "-" (.getDate x)
-;               "T" (pad-zeros (.getHours x)) ":" (pad-zeros (.getMinutes x))
-;               ":" (pad-zeros (.getSeconds x)) "-" (pad-zeros (.getTimezoneOffset x)) ":00\"")))
-;
-;(extend java.util.UUID json/JSONWriter {:-write write-json-uuid})
-;(extend java.util.Date json/JSONWriter {:-write write-json-ie-date})
+(defn write-transit-str [value]
+  (let [io (java.io.ByteArrayOutputStream. 4096)
+        w (transit/writer io :json-verbose)]
+    (transit/write w value)
+    (.toString io)))
 
-(defn date-like? [v]
-  (if (and (string? v) (re-matches #"\d\d\d\d-\d{1,2}-\d{1,2}T\d\d:\d\d:\d\d(\+|-)\d\d:\d\d" v)) true false))
-
-(defn pre-process-values [m]
-  (do
-    (prn m)
-    (into {} (map (fn [x] (if (date-like? (second x)) (java.sql.Date/valueOf (second x)) (second x))) m))))
+(defn read-transit-str [s]
+  (let [io (java.io.ByteArrayInputStream. 4096)
+        r (transit/reader io :json)]
+    (prn s)
+    (transit/read r)))
 
 (defn read-json-request
   "Parses JSON string from request body and returns a clojure map"
   [request]
   (-> (get request :body)
       (slurp)
-      (json/parse-string true)
-      (pre-process-values)))
+      ((fn [m] (prn m) m))
+      (read-transit-str)))
 
 (defn json-response
   "A helper function for returning a JSON response"
   [body]
   {:status 200
    :headers {"Content-Type" "application/json; charset=utf8"}
-   :body (json/generate-string body {:pretty true})})
+   :body (write-transit-str body)})
 
 (defn remove-namespaced-keys [m]
   (into {} (map (fn [x] [(keyword (name (first x))) (second x)]) m)))
-
-(defn nest-namespaced-keys [m]
-  (->> m
-       (map (fn nest [x]
-              (let [ns (namespace (first x))
-                    n (keyword (name (first x)))]
-                (if (nil? ns)
-                  x
-                  (if (namespace n)
-                    [(keyword ns) (nest [n (second x)])]
-                    [(keyword ns) [(keyword (name (first x))) (second x)]])))))
-        ((fn [x] (print (str "a new struct: " (prn-str x))) x))
-        (reduce (fn comb [m x]
-                  (print (str "Memo: " (prn-str m)))
-                  (print (str "Inter: " (prn-str x)))
-                  (let [k (first x)
-                        v (second x)]
-                    (cond
-                      (and (vector? v)  (not (contains? m k))) (assoc m k (comb {} v))
-                      (and (vector? v)       (contains? m k))  (assoc m k (merge (get m k) (comb {} v)))
-                      (and (map? v) (contains? m k))  (assoc m k (merge (get m k) v))
-                      :else (assoc m k v)))) {})
-        ((fn [x] (prn x) x))))
 
 ;; TODO: need to create a query parser for this
 (defn find-ppts
@@ -107,7 +70,7 @@
   "Return full participant listing as JSON"
   [study page per-page]
   (->> (core/get-all-ppts (core/get-db) study)
-       (map :ppt/vista/name)
+       (map #(e->map [:ppt/vista/name :ppt/vista/patient_key :ppt/dob :ppt/first_name :ppt/last_name] %1))
        ((fn [m] (prn m) m))
        (json-response)))
 
@@ -116,9 +79,9 @@
    return a JSON string representation of of the participant"
   [study proto]
   (if (or (empty? proto) (nil? study))
-    (json-response {:type "error" :msg "study should not be nil and proto should not be empty"})
+    (json-response {:type "error" :msg (str "study (" (prn-str study) ") should not be nil and proto (" (prn-str proto) ") should not be empty")})
     (->> (core/create-ppt (core/get-conn) study proto)
-         (e->map :ppt (keys proto))
+         (e->map (keys proto))
          (json-response))))
 
 (defn get-ppt

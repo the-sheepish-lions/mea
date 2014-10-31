@@ -185,10 +185,9 @@
 
 (defn get-all-ppts
   "Returns all participants"
-  [db & [study]]
-  (if (nil? study)
-    (get-all-entities db :ppt/ppt_id)
-    (:study/ppts (get-study db study))))
+  [db study]
+  (let [ppts (:study/ppts (get-study db study))]
+    (if (nil? ppts) #{} ppts)))
 
 (defn get-ppt-from-study
   "Returns ppt based on UUID if they are in the given study returns nil otherwise"
