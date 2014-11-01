@@ -3,4 +3,4 @@
 	url = git@10.170.100.132:/var/webapps/dragnet-development/.git
 [submodule "vendor/mea-import"]
 	path = vendor/mea-import
-	url = git@10.170.100.132:mea-import.git
+	url = git@10.170.100.132:mea-client.git
