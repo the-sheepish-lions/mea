@@ -8,3 +8,4 @@ config/datomic.properties
 db/*.csv
 config/*.properties
 .idea/
+*.sw*

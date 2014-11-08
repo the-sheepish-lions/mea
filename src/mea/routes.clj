@@ -9,17 +9,16 @@
 
 (defroutes main-routes
   ;; participants
-  (POST "/:study/patients" request
+  (POST "/:study/ppts" request
         ;; WARNING: be careful with this, request body is mutable and returns empty after one read! (prn (read-json-request request))
         (let [{params :params} request
               proto (read-transit-str (slurp (get request :body)))]
-          (create-ppt (keyword (:study params)) proto)
-          ))
+          (create-ppt (keyword (:study params)) proto)))
 
-  (GET "/:study/patients/:id" [study id]
+  (GET "/:study/ppts/:id" [study id]
        (get-ppt (keyword study) id))
 
-  (GET "/:study/patients" {params :params}
+  (GET "/:study/ppts" {params :params}
        (prn params)
        (list-ppts (keyword (params :study)) (params :page) (params :per-page)))
 
@@ -28,9 +27,12 @@
     (prn params)
     (create-study params))
 
-  (GET "/" {params :params} ; {{page :page per-page :per-page} :params}
+  (GET "/" {params :params}
        (prn params)
        (list-studies (params :page) (params :per-page)))
+
+  (GET "/:study" {params :params}
+       (get-study (keyword (params :study))))
 
   (route/resources "/")
   (route/not-found "Page not found"))

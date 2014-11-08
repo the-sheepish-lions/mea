@@ -97,5 +97,15 @@
   "Return full study listing as JSON"
   [page per-page]
   (->> (core/get-all-studies (core/get-db))
-       (map #(e->map [:study/keyword :study/name] %1))
+       (map #(e->map %1 [:study/keyword :study/name]))
        (json-response)))
+
+(defn get-study
+  "Return a more detailed view of a study"
+  [study]
+  (let [s (core/get-study (core/get-db) study)]
+    (-> {:study/name (get s :study/name)
+         :study/keyword (get s :study/keyword)
+         :study/attributes (map :study.attribute/keyword (get s :study/attributes))
+         :study/ppt_count (count (get s :study/ppts))}
+        (json-response))))

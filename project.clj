@@ -8,6 +8,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.datomic/datomic-free "0.9.4894"]
                  [org.clojure/data.json "0.2.5"]
+                 [com.cognitect/transit-clj "0.8.259"]
                  [hiccup "1.0.5"]
                  [compojure "1.1.9"]
                  [ring/ring-core "1.3.1"]
