@@ -2,8 +2,8 @@
   (:use [hiccup core page]
         [clojure.walk])
   (:require [cognitect.transit :as transit]
-            [mea.core :as core]
-            [schema.core :as s]))
+            [datomic.api :as d]
+            [mea.core :as core]))
 
 (defn index-page
   "Display the Mea Web Service Documentation as HTML"
@@ -27,8 +27,15 @@
 
 (defn e->map
   "Converts an entity map into a JSON serializable map."
-  [e ks]
-  (map (fn [k] {k (get e k)}) ks))
+  [e & fields]
+  ;; FIXME: This should be rewritten
+  (let [ks (if (nil? (first fields)) (keys e) (first fields))]
+    (into {} (map (fn [k]
+          (let [v (get e k)]
+            (cond
+              (instance? datomic.query.EntityMap v) [k (e->map v)]
+              (instance? clojure.lang.PersistentHashSet v) [k (map e->map v)]
+              :else [k v]))) ks))))
 
 (defn write-transit-str [value]
   (let [io (java.io.ByteArrayOutputStream. 4096)
@@ -56,12 +63,21 @@
   "Return Participant Search Results as JSON"
   [query])
 
+(defn filter-ppts
+  "Filter ppts by attr value pair"
+  [study params])
+
 (defn list-ppts
   "Return full participant listing as JSON"
-  [study page per-page]
+  [study params]
   (->> (core/get-all-ppts (core/get-db) study)
        (map #(e->map %1 [:ppt/vista/name :ppt/vista/patient_key :ppt/dob :ppt/first_name :ppt/last_name :ppt/ppt_id]))
-       ((fn [m] (prn m) m))
+       (json-response)))
+
+(defn search-ppts
+  [study params]
+  (->> (core/filter-ppts (core/get-db) study params)
+       (map #(e->map %1 [:ppt/vista/name :ppt/vista/patient_key :ppt/dob :ppt/first_name :ppt/last_name :ppt/ppt_id]))
        (json-response)))
 
 (defn create-ppt
@@ -70,9 +86,9 @@
   [study proto]
   (if (or (empty? proto) (nil? study))
     (json-response {:type "error" :msg (str "study (" (prn-str study) ") should not be nil and proto (" (prn-str proto) ") should not be empty")})
-    (->> (core/create-ppt (core/get-conn) study proto)
-         (e->map (keys proto))
-         (json-response))))
+    (-> (core/create-ppt (core/get-conn) study proto)
+        (e->map (keys proto))
+        (json-response))))
 
 (defn get-ppt
   "Return the JSON representation of a participant"
@@ -80,9 +96,41 @@
   (let [ppt (core/get-ppt-from-study (core/get-db) study (java.util.UUID/fromString id))]
     (if (nil? ppt)
       (json-response {:type "error" :msg (str "Couldn't find patient " id " within the " study " study.")})
-      (-> (e->map ppt (keys ppt))
-          ;(nest-namespaced-keys)
-          (json-response)))))
+      (json-response (e->map ppt (keys ppt))))))
+
+(defn update-ppt
+  "Update PPT and return JSON"
+  [study id proto]
+  (let [ppt (core/get-ppt-from-study (core/get-db) study (java.util.UUID/fromString id))]
+    (if (nil? ppt)
+      (json-response {:type "error" :msg (str "Couldn't find patient " id " within the " study " study.")})
+      (do
+        (core/assert-to-entity (:db/id ppt) proto)
+        (core/get-ppt (core/get-db) id)
+        (json-response (e->map ppt (keys ppt)))))))
+
+(defn remove-ppt
+  "Retract PPT and return JSON"
+  [study id]
+  (let [ppt (core/get-ppt-from-study (core/get-db) study (java.util.UUID/fromString id))]
+    (if (nil? ppt)
+      (json-response {:type "error" :msg (str "Couldn't find patient " id " within the " study " study.")})
+      (try
+        (core/remove-ppt-from-study (core/get-conn) study (:db/id ppt))
+        (json-response (e->map ppt (keys ppt)))
+        (catch Exception e (json-response {:type "error" :msg (str "Error: " (.getMessage e))}))))))
+
+
+(defn get-ppt-address
+  "Return the JSON representation of a participant's address"
+  [study id]
+  (let [ppt (core/get-ppt-from-study (core/get-db) study (java.util.UUID/fromString id))]
+    (if (nil? ppt)
+      (json-response {:type "error" :msg (str "Couldn't find patient " id " within the " study " study.")})
+      (let [addr (:ppt/address ppt)]
+        (if (nil? addr)
+          (json-response nil)
+          (json-response (e->map addr (keys addr))))))))
 
 (defn create-study
   "Create a study with the given attributes
@@ -106,6 +154,9 @@
   (let [s (core/get-study (core/get-db) study)]
     (-> {:study/name (get s :study/name)
          :study/keyword (get s :study/keyword)
-         :study/attributes (map :study.attribute/keyword (get s :study/attributes))
+         :study/attributes (map (fn [e]
+                                  {:keyword (get e :study.attribute/keyword)
+                                   :name (get e :study.attribute/name)
+                                   :order (get e :study.attribute/order)}) (get s :study/attributes))
          :study/ppt_count (count (get s :study/ppts))}
         (json-response))))

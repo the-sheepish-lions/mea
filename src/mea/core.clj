@@ -1,7 +1,7 @@
 (ns mea.core
   (:require [datomic.api :as d]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io])
+            [clojure.java.io :as io]
+            [clojure.data.csv :as csv])
   (:import datomic.Util)
   (:gen-class))
 
@@ -12,6 +12,16 @@
     (let [props (java.util.Properties.)]
       (.load props reader)
       (into {} (for [[k v] props] [(keyword k) (read-string v)])))))
+
+(defn read-csv [file]
+  (let [data (with-open [in-file (io/reader file)]
+               (doall
+                 (csv/read-csv in-file)))
+        fields (first (take 1 data))]
+    (->> (drop 1 data)
+         (map (fn [row]
+                (->> (map-indexed #(vector (keyword (nth fields %1)) %2) row)
+                     (into {})))))))
 
 ;; read-all and transact-all are taken from here:
 ;; https://github.com/Datomic/day-of-datomic/blob/053b3bd983d165b8fa7c0c039712fb1cb75eddf3/src/datomic/samples/io.clj
@@ -146,7 +156,7 @@
     (throw (Exception. "a keyword is required"))))
 
 (defn get-study
-  "Find a study by it's keyword name, returns a dyanmic map
+  "Find a study by it's keyword name, returns a dynamic map
    of the given study's attribute or nil of the study cannot be found."
   [db kw]
   (->> (d/entid db [:study/keyword kw])
@@ -176,6 +186,29 @@
   (let [ppts (:study/ppts (get-study db study))]
     (if (nil? ppts) #{} ppts)))
 
+(defn filter-ppts
+  "Returns all participants that match attr/value pairs"
+  [db study params]
+  (let [vars (map-indexed (fn [i x] (read-string (str "?v" (inc i)))) (keys params))
+        preds (vec (concat [['?s :study/keyword '?study]
+                            ['?s :study/ppts '?e]]
+                           (map-indexed #(vector '?e %2 (nth vars %1)) (keys params))))
+        values (vals params)
+        q {:find ['?e]
+           :with ['?s]
+           :in (vec (concat '($ ?study) vars))
+           :where preds}]
+    (prn values)
+    (prn q)
+    (->> (apply (partial d/q q db study) values)
+         (map first)
+         (map (partial d/entity (get-db))))))
+
+(defn remove-ppt-from-study
+  "Remove (retract) PPT from database returns the new db and entity map"
+  [conn study eid]
+  @(d/transact conn [[:db/retract [:study/keyword study] :study/ppt eid]]))
+
 (defn get-ppt-from-study
   "Returns ppt based on UUID if they are in the given study returns nil otherwise"
   [db study uuid]
@@ -185,6 +218,5 @@
               [?e :ppt/ppt_id ?uuid]
               [?s :study/keyword ?study]
               [?s :study/ppts ?e]] db study uuid)
-       (first)
-       (first)
+       (ffirst)
        (d/entity db)))

@@ -9,3 +9,4 @@ db/*.csv
 config/*.properties
 .idea/
 *.sw*
+resources/*.csv

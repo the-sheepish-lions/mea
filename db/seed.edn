@@ -4,6 +4,7 @@
   [:db/add #db/id[:db.part/mea -2] :study/keyword :grade]
   [:db/add #db/id[:db.part/mea -2] :study/name "GRADE"]
 ]
+
 ;; GRADE Attributes Meta Information
 [
   [:db/add #db/id[:db.part/mea -3] :study.attribute/keyword :ppt/grade/pid]
@@ -26,6 +27,7 @@
   [:db/add #db/id[:db.part/mea -7] :study.attribute/name "Ethnicity"]
   [:db/add #db/id[:db.part/mea -7] :study.attribute/description "Enthicity of Patient, Mother, and Father"]
 ]
+
 ;; add attributes to study
 [
   [:db/add [:study/keyword :grade] :study/attributes [:study.attribute/keyword :ppt/grade/pid]]
@@ -41,6 +43,7 @@
   :db/ident :db.part.study/grade
   :db.install/_partition :db.part/db}
 ]
+
 [
  {:db/id #db/id[:db.part/db]
   :db/ident :ppt/grade/pid
@@ -151,18 +154,19 @@
   [:db/add #db/id[:db.part.study/grade -7] :metric/unit "cm"]
 ]
 
-
 ;; CONFIRM Study
 [
   [:db/add #db/id[:db.part/mea -8] :study/keyword :confirm]
   [:db/add #db/id[:db.part/mea -8] :study/name "CONFIRM"]
 ]
+
 ;; CONFIRM Attributes Meta Information
 [
   [:db/add #db/id[:db.part/mea -9] :study.attribute/keyword :ppt/confirm/pid]
   [:db/add #db/id[:db.part/mea -9] :study.attribute/name "PID"]
   [:db/add #db/id[:db.part/mea -9] :study.attribute/description "CONFIRM Participant ID"]
 ]
+
 ;; add attribute to study
 [
   [:db/add [:study/keyword :confirm] :study/attributes [:study.attribute/keyword :ppt/confirm/pid]]
@@ -174,6 +178,7 @@
   :db/ident :db.part.study/confirm
   :db.install/_partition :db.part/db}
 ]
+
 [
  {:db/id #db/id[:db.part/db]
   :db/ident :ppt/confirm/pid
