@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+BIN=$DIR/bin/transactor
+CONFIG=$DIR/config/transactor.properties
+PIDFILE=$DIR/datomic.pid
+
+start_service() {
+  $BIN $CONFIG &>> /dev/null
+}
+
+# start and fork as daemon
+start_service &
+
+# write pid to $PIDFILE
+echo $! | tee $PIDFILE

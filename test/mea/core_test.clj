@@ -1,10 +1,5 @@
 (ns mea.core-test
-  (:use midje.sweet)
   (:require [mea.core :refer :all]))
-
-(def db-uri "datomic:mem://mea")
-(def conn (d/connect db-uri))
-(def db (d/db conn))
 
 ;;(fact "creates a participant"
 ;;     (do

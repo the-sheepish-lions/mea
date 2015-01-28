@@ -1,10 +1,7 @@
 (defproject mea-service "0.0.1-SNAPSHOT"
   :description "A participant database"
   :url "http://phrei.org"
-  :plugins [[lein-marginalia "0.8.0"]
-            [lein-ring "0.8.11"]
-            [datomic-schema-grapher "0.0.1"]
-            [lein-bower "0.5.1"]]
+  :plugins [[lein-ring "0.8.11"]]
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [com.datomic/datomic-free "0.9.4894"]
                  [hiccup "1.0.5"]
@@ -15,13 +12,10 @@
                  [datomic-schema-grapher "0.0.1"]
                  [com.cognitect/transit-clj "0.8.259"]
                  [org.clojure/data.csv "0.1.2"]]
-  :bower-dependencies [[bootstrap "2.3.1"]
-                       [jasmine "2.0.0"]]
-  :bower {:directory "resources/js-lib"}
-  :ring {:handler mea.routes/app}
+  :ring {:handler mea.service/app}
   :min-lein-version "2.0.0"
-  :main mea.core
   :resource-paths ["config", "resources"]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
-                                  [ring/ring-devel "1.3.1"]]}}
+                                  [ring/ring-devel "1.3.1"]]}
+             :uberjar {:aot [mea.service]}}
   :global-vars {*print-length* 100})

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+JAR=$DIR/mea-service.jar
+LOG=$DIR/mea.log
+PIDFILE=$DIR/mea.pid
+
+start_service() {
+  java -cp $JAR mea.service &>> $LOG
+}
+
+# start and fork as daemon
+start_service &
+
+# write pid to $PIDFILE
+echo $! | tee $PIDFILE

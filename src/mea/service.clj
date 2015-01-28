@@ -1,6 +1,8 @@
-(ns mea.routes
+(ns mea.service
+  (:gen-class)
   (:use compojure.core
         mea.views
+        ring.adapter.jetty
         [hiccup.middleware :only (wrap-base-url)])
   (:require [compojure.route :as route]
             [compojure.handler :as handler]
@@ -63,3 +65,8 @@
 (def app
   (-> (handler/site main-routes)
       (wrap-base-url)))
+
+(defn -main []
+  (do
+    (println "Starting Mea on port 3001...")
+    (run-jetty app {:port 3001})))
