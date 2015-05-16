@@ -52,7 +52,7 @@
 (def db-uri (get datomic-config :datomic.uri))
 
 ;; setup && seed database
-(setup-db db-uri)
+;;(setup-db db-uri)
 
 ;; our database connection
 (defn get-conn [] (d/connect db-uri))

@@ -1,36 +1,15 @@
 (ns mea.views
-  (:use [hiccup core page]
-        [clojure.walk])
+  (:use [clojure.walk])
   (:require [cognitect.transit :as transit]
             [datomic.api :as d]
             [mea.core :as core]))
-
-(defn index-page
-  "Display the Mea Web Service Documentation as HTML"
-  []
-  (html5 {:lang "en"}
-   [:head
-    [:title "Mea - A Participant Database"]
-    (include-css "/css/style.css")
-    (include-css "/js/jasmine/lib/jasmine-2.0.3/jasmine.css")
-    (include-css "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css")
-    (include-css "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css")
-    (include-js "https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js")
-    (include-js "https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js")
-    (include-js "/js/underscore-min.js")
-    (include-js "/js/jasmine/lib/jasmine-2.0.3/jasmine.js")
-    (include-js "/js/jasmine/lib/jasmine-2.0.3/jasmine-html.js")
-    (include-js "/js/jasmine/lib/jasmine-2.0.3/boot.js")
-    (include-js "/js/test.js")]
-   [:body
-    [:div {:class "container"}]]))
 
 (defn e->map
   "Converts an entity map into a JSON serializable map."
   [e & fields]
   ;; FIXME: This should be rewritten
   (let [ks (if (nil? (first fields)) (keys e) (first fields))]
-    (into {} (map (fn [k]
+    (into {:db/id (:db/id e)} (map (fn [k]
           (let [v (get e k)]
             (cond
               (instance? datomic.query.EntityMap v) [k (e->map v)]
