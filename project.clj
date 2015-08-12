@@ -16,4 +16,5 @@
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]
                                   [ring/ring-devel "1.3.1"]]}
              :uberjar {:aot [mea.service]}}
-  :global-vars {*print-length* 100})
+  :global-vars {*print-length* 100}
+  :jvm-opts ["-Xmx1g"])

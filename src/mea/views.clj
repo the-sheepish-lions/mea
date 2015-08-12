@@ -16,9 +16,35 @@
               (instance? clojure.lang.PersistentHashSet v) [k (map e->map v)]
               :else [k v]))) ks))))
 
+(defn nsed-name 
+  "Convert a keyword or symbol to a string in
+   namespace/name format."
+  [^clojure.lang.Named kw-or-sym]
+  (if-let [ns (.getNamespace kw-or-sym)]
+    (str ns "/" (.getName kw-or-sym))
+    (.getName kw-or-sym)))
+
+(defn entity? [v] (instance? datomic.query.EntityMap v))
+
+(defn entity-rep [v]
+  (into (sorted-map)
+    (map
+      (fn [[k v]]
+        [k ;;(nsed-name k)
+         (cond
+           (entity? v) (entity-rep v)
+           (set? v) (map entity-rep v)
+           :else v)]) v)))
+
+(def entity-writer
+  (transit/write-handler
+    (constantly "map")
+    entity-rep
+    (fn [v] nil)))
+
 (defn write-transit-str [value]
   (let [io (java.io.ByteArrayOutputStream. 4096)
-        w (transit/writer io :json-verbose)]
+        w (transit/writer io :json-verbose {:handlers {datomic.query.EntityMap entity-writer}})]
     (transit/write w value)
     (.toString io)))
 

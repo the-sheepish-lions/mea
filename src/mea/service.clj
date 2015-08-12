@@ -87,20 +87,54 @@
       :db-after
       (d/entity id)))
 
+(defn map->error [m]
+  (cognitect.transit/tagged-value "error" m))
+
+(defn error
+  "generate a transit tagged value from a Java Exception"
+  [e]
+  (map->error {:type (str (class e))
+               :message (.getMessage e)
+               :backtrace (mapv #(.toString %1) (.getStackTrace e))}))
+
+(defn +day [d n]
+  (java.util.Date. (.getYear d) (.getMonth d) (+ (.getDate d) n) (.getHours d) (.getMinutes d)))
+
+(defn -day [d n]
+  (java.util.Date. (.getYear d) (.getMonth d) (- (.getDate d) n) (.getHours d) (.getMinutes d)))
+
+(defn within [d begin end]
+  (and (.before ^java.util.Date (-day begin 1) d)
+       (.after ^java.util.Date (+day end 1) d)))
+
+(defn domain [ident]
+  (let [e (d/entity (mea/get-db) [:domain/ident ident])]
+    {:domain/ident (e :domain/ident)
+     :domain.events/types (e :domain.events/types)
+     :domain/attributes (e :domain/attributes)}))
+
+(defn domain-events [ident begin end]
+  (->>
+    (d/q '[:find ?e ?start
+           :in $ ?ident
+           :where [?d :domain/ident ?ident]
+                  [?d :domain/events ?e]
+                  [?e :event/starts_at ?start]] (mea/get-db) ident)
+    (filter #(within (second %1) begin end))
+    (sort-by #(second %1))
+    (map first)
+    (map (partial d/entity (mea/get-db)))))
+
 (comment
 
-  (update-entity (mea/get-conn)
-                 444202697622585
-                 {:ppt/hx
-                  {:event/type [:event_type/ident :grade/annual]
-                   :event/starts_at #inst "2015-05-04T08:00"
-                   :event/ends_at #inst "2015-05-04T12:00"}})
+  (domain-events :study/grade #inst "2015-06-01" #inst "2015-09-01")
 
   )
 
 (defroutes main-routes
   ;; generic entity interface everything else is depreciated
   (GET "/entities/:id" [id]
+       (prn "entity id: " id)
        (-> (d/entity (mea/get-db) (Long/valueOf id))
            e->map
            json-response))
@@ -114,9 +148,39 @@
   (POST "/entities/:id" request
         (let [{{id :id} :params body :body} request
               params (read-transit-str (slurp body))]
-          (-> (update-entity (mea/get-conn) (Long/valueOf id) params)
-              e->map
-              json-response)))
+          (try
+            (prn id)
+            (prn params)
+            (-> (update-entity (mea/get-conn) (Long/valueOf id) params)
+                e->map
+                json-response)
+            (catch Exception e
+              (json-response (error e))))))
+
+  (DELETE "/entities/:id" [id]
+        (let [e (d/entity (mea/get-db) id)]
+          (if (nil? e)
+            (json-response (map->error {:message "Couldn't find entity"}))
+            (try
+              @(d/transact (mea/get-conn) [[:db.fn/retractEntity (Long/valueOf id)]])
+              (json-response (e->map e))
+            (catch Exception ex
+              (json-response (error ex)))))))
+
+  (GET "/domain" {{ident :ident} :params body :body}
+       (try
+        (if (nil? ident) (throw (Exception. "an ident is required")))
+        (json-response (domain (keyword ident)))
+        (catch Exception e
+          (json-response (error e)))))
+
+  (POST "/domain-events" {{ident :ident} :params body :body}
+        (let [{begin :begin, end :end} (read-transit-str (slurp body))]
+          (try
+            (if (nil? ident) (throw (Exception. "an ident is required")))
+            (json-response (domain-events (keyword ident) begin end))
+            (catch Exception e
+              (json-response (error e))))))
 
   ;; participants
   ;; create
