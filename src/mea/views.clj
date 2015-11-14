@@ -26,15 +26,25 @@
 
 (defn entity? [v] (instance? datomic.query.EntityMap v))
 
-(defn entity-rep [v]
-  (into (sorted-map)
-    (map
-      (fn [[k v]]
-        [k ;;(nsed-name k)
-         (cond
-           (entity? v) (entity-rep v)
-           (set? v) (map entity-rep v)
-           :else v)]) v)))
+(def entity-rep
+  (partial trampoline
+    (fn [value]
+      (cond (nil? value) {}
+            (entity? value)
+              #(into (sorted-map :db/id (get value :db/id))
+                     (map
+                       (fn [[key value]]
+                             [key
+                              (cond (entity? value) (entity-rep value)
+                                    (set? value) (map entity-rep value)
+                                    :else value)]) value))))))
+(comment
+
+  (->> (d/entity (core/get-db) [:domain/ident :study/grade])
+       (entity-rep))
+
+)
+
 
 (def entity-writer
   (transit/write-handler
@@ -50,8 +60,15 @@
 
 (defn read-transit-str [s]
   (let [io (java.io.StringBufferInputStream. s)
-        r (transit/reader io :json)]
+        r (transit/reader io :json {:handlers {"db/id" (transit/read-handler (fn [rep] (apply d/tempid rep)))}})]
     (transit/read r)))
+
+(comment
+
+  (read-transit-str (write-transit-str (transit/tagged-value "db/id" [:db.part/db -1])))
+  (java.io.StringBufferInputStream. "[\"~#db/id\",[\"~:db.part/db\",-1]]")
+
+  )
 
 (defn json-response
   "A helper function for returning a JSON response"

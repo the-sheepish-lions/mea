@@ -59,15 +59,48 @@
        :in (vec (concat '($) vars))
        :where preds}}))
 
+(defmulti filter-tempids
+  "Filter tempids from map or vector tx data"
+  class)
+
+(defmethod filter-tempids
+  clojure.lang.IPersistentVector
+  [tx]
+  (filter #(= (class %1) datomic.db.DbId) tx))
+
+(defmethod filter-tempids
+  clojure.lang.IPersistentMap
+  [tx]
+  (filter #(= (class (second %1)) datomic.db.DbId) tx))
+
+(defmulti get-id
+  "Get entity id from map or vector tx data"
+  class)
+
+(defmethod get-id
+  clojure.lang.IPersistentVector
+  [tx]
+  (second tx))
+
+(defmethod get-id
+  clojure.lang.IPersistentMap
+  [tx]
+  (:db/id tx))
+
+(defn resolve-entities [before-tx-data after-tx-data]
+  (let [eids (->> (map get-id before-tx-data)
+                  (remove #(= (class %1) datomic.db.DbId))
+                  (map #(vector %1 (d/entity (:db-after after-tx-data) %1)))
+                  (into (sorted-map)))]
+    (prn "eids" eids)
+    (->> (mapcat filter-tempids before-tx-data)
+         distinct
+         (map #(vector (second (.values %1)) (d/resolve-tempid (:db-after after-tx-data) (:tempids after-tx-data) %1)))
+         (map #(vector (first %1) (d/entity (:db-after after-tx-data) (second %1))))
+         (into (sorted-map))
+         (merge eids))))
+
 (comment
-
-(parse-preds '[[?e :event/type ?t] [[:study/keyword :grade] :study/ppts ?e]])
-
-(filter (fn [pred] (some #(= :#?var %1) pred)) '[[?e :event/type ?t] [:#?var :study/ppts ?e]])
-
-(fetch-vars '[?v1 :event/type ?t])
-
-(re-matches #"^\?v\d+" (name '?v1))
 
 )
 
@@ -103,6 +136,10 @@
 (defn -day [d n]
   (java.util.Date. (.getYear d) (.getMonth d) (- (.getDate d) n) (.getHours d) (.getMinutes d)))
 
+(defn same-day? [d1 d2]
+  (.equals (org.joda.time.LocalDate/fromDateFields d1)
+           (org.joda.time.LocalDate/fromDateFields d2)))
+
 (defn within [d begin end]
   (and (.before ^java.util.Date (-day begin 1) d)
        (.after ^java.util.Date (+day end 1) d)))
@@ -136,13 +173,23 @@
   (GET "/entities/:id" [id]
        (prn "entity id: " id)
        (-> (d/entity (mea/get-db) (Long/valueOf id))
-           e->map
            json-response))
-           
+
+  (POST "/tx" {body :body}
+        (let [txs (read-transit-str (slurp body))]
+          (prn "txs" txs)
+          (try
+            (->> @(d/transact (mea/get-conn) txs)
+                 (resolve-entities txs)
+                 ((fn [data] (do (prn "resolved-entities" data) data)))
+                 json-response)
+            (catch Exception e
+              (json-response (error e))))))
+
   (POST "/find-entities" request
         (let [preds (read-transit-str (slurp (get request :body)))]
           (-> (find-entities (mea/get-db) preds)
-              ((fn [es] (map e->map es))) ; FIXME: partial is throwing an exception
+              ;((fn [es] (map e->map es))) ; FIXME: partial is throwing an exception
               json-response)))
 
   (POST "/entities/:id" request
@@ -152,7 +199,6 @@
             (prn id)
             (prn params)
             (-> (update-entity (mea/get-conn) (Long/valueOf id) params)
-                e->map
                 json-response)
             (catch Exception e
               (json-response (error e))))))
@@ -163,7 +209,7 @@
             (json-response (map->error {:message "Couldn't find entity"}))
             (try
               @(d/transact (mea/get-conn) [[:db.fn/retractEntity (Long/valueOf id)]])
-              (json-response (e->map e))
+              (json-response e)
             (catch Exception ex
               (json-response (error ex)))))))
 
