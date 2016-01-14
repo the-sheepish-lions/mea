@@ -36,6 +36,7 @@
                        (fn [[key value]]
                              [key
                               (cond (entity? value) (entity-rep value)
+                                    (:domain/ident value) (:db/id value)
                                     (set? value) (map entity-rep value)
                                     :else value)]) value))))))
 (comment

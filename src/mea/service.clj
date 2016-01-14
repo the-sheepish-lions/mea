@@ -146,25 +146,71 @@
 
 (defn domain [ident]
   (let [e (d/entity (mea/get-db) [:domain/ident ident])]
-    {:domain/ident (e :domain/ident)
-     :domain.events/types (e :domain.events/types)
-     :domain/attributes (e :domain/attributes)}))
+    {:db/id (:db/id e)
+     :domain/ident (:domain/ident e)
+     :domain/events (domain-events ident)
+     :study/ppts (distinct (concat (:study/ppts e) (domain-ppts ident)))
+     :domain.ppts/idents (map e->map (:domain.ppts/idents e))
+     :domain.events/types (map e->map (:domain.events/types e))
+     :domain/medications (:domain/medications e)
+     :study/attributes (map e->map (:study/attributes e))}))
 
-(defn domain-events [ident begin end]
+(defn tap-log [val]
+  (do
+    (prn val) val))
+
+(defn domain-events
+  ([ident] (domain-events ident (java.util.Date. 90 1 1) (java.util.Date. 999 1 1)))
+  ([ident begin end]
+    (let [domain (d/entity (mea/get-db) [:domain/ident ident])]
+      (->>
+        (d/q '[:find ?e ?start
+               :in $ ?ident
+               :where [?d :domain/ident ?ident]
+                      [?e :event/domains ?d]
+                      [?e :event/starts_at ?start]] (mea/get-db) ident)
+        (map first)
+        (map (partial d/entity (mea/get-db)))
+        (map #(dissoc (e->map %) :event/domains))
+        (concat (:domain/events domain))
+        (filter #(within (:event/starts_at %) begin end))
+        (sort-by #(:event/starts_at %))))))
+
+(defn pager [page psize col]
+  (->> col (drop psize) (take psize)))
+
+(defn ppt-count [ident]
   (->>
-    (d/q '[:find ?e ?start
+    (d/q '[:find ?e
            :in $ ?ident
            :where [?d :domain/ident ?ident]
-                  [?d :domain/events ?e]
-                  [?e :event/starts_at ?start]] (mea/get-db) ident)
-    (filter #(within (second %1) begin end))
-    (sort-by #(second %1))
-    (map first)
-    (map (partial d/entity (mea/get-db)))))
+                  [?d :study/ppts ?e]
+                  [?e :ppt/domains ?d]] (mea/get-db) ident)
+    count))
+
+(defn domain-ppts
+  ([ident] (domain-ppts ident 0 (ppt-count ident) :last))
+  ([ident page psize sortby]
+    (let [fields {:first 1 :last 2}
+          sort-idx (or (fields sortby) 2)]
+      (->>
+        (d/q '[:find ?e ?fname ?lname
+               :in $ ?ident
+               :where [?d :domain/ident ?ident]
+                      [?e :ppt/domains ?d]
+                      [?e :ppt/first_name ?fname]
+                      [?e :ppt/last_name ?lname]] (mea/get-db) ident)
+        (pager page psize)
+        (sort-by #(nth % sort-idx))
+        (map first)
+        (map #(d/entity (mea/get-db) %))
+        (map #(dissoc % :ppt/domains))))))
 
 (comment
 
-  (domain-events :study/grade #inst "2015-06-01" #inst "2015-09-01")
+ (map #(:event/domains %) (domain-events :study/grade #inst "2015-06-01" #inst "2015-09-01"))
+
+  (domain-ppts :study/grade 0 10 :last)
 
   )
 
