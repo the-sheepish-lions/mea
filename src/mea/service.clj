@@ -144,17 +144,6 @@
   (and (.before ^java.util.Date (-day begin 1) d)
        (.after ^java.util.Date (+day end 1) d)))
 
-(defn domain [ident]
-  (let [e (d/entity (mea/get-db) [:domain/ident ident])]
-    {:db/id (:db/id e)
-     :domain/ident (:domain/ident e)
-     :domain/events (domain-events ident)
-     :study/ppts (distinct (concat (:study/ppts e) (domain-ppts ident)))
-     :domain.ppts/idents (map e->map (:domain.ppts/idents e))
-     :domain.events/types (map e->map (:domain.events/types e))
-     :domain/medications (:domain/medications e)
-     :study/attributes (map e->map (:study/attributes e))}))
-
 (defn tap-log [val]
   (do
     (prn val) val))
@@ -205,6 +194,17 @@
         (map first)
         (map #(d/entity (mea/get-db) %))
         (map #(dissoc % :ppt/domains))))))
+
+(defn domain [ident]
+  (let [e (d/entity (mea/get-db) [:domain/ident ident])]
+    {:db/id (:db/id e)
+     :domain/ident (:domain/ident e)
+     :domain/events (domain-events ident)
+     :study/ppts (distinct (concat (:study/ppts e) (domain-ppts ident)))
+     :domain.ppts/idents (map e->map (:domain.ppts/idents e))
+     :domain.events/types (map e->map (:domain.events/types e))
+     :domain/medications (:domain/medications e)
+     :study/attributes (map e->map (:study/attributes e))}))
 
 (comment
 
