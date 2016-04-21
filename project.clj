@@ -1,5 +1,5 @@
 (defproject mea-service "0.0.1-SNAPSHOT"
-  :description "A participant database"
+  :description "An entity based, workflow, scheduling database"
   :url "http://phrei.org"
   :plugins [[lein-ring "0.8.11"]]
   :dependencies [[org.clojure/clojure "1.7.0"]

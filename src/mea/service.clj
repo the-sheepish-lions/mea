@@ -173,13 +173,12 @@
     (d/q '[:find ?e
            :in $ ?ident
            :where [?d :domain/ident ?ident]
-                  [?d :study/ppts ?e]
                   [?e :ppt/domains ?d]] (mea/get-db) ident)
     count))
 
 (defn domain-ppts
-  ([ident] (domain-ppts ident 0 (ppt-count ident) :last))
-  ([ident page psize sortby]
+  ([ident] (domain-ppts ident :last))
+  ([ident sortby]
     (let [fields {:first 1 :last 2}
           sort-idx (or (fields sortby) 2)]
       (->>
@@ -189,11 +188,20 @@
                       [?e :ppt/domains ?d]
                       [?e :ppt/first_name ?fname]
                       [?e :ppt/last_name ?lname]] (mea/get-db) ident)
-        (pager page psize)
+
+        ;(pager page psize)
         (sort-by #(nth % sort-idx))
         (map first)
         (map #(d/entity (mea/get-db) %))
-        (map #(dissoc % :ppt/domains))))))
+        (map #(dissoc (e->map %) :ppt/domains))))))
+
+(comment
+
+  (domain-ppts :study/test)
+
+  (ppt-count :study/test)
+
+  )
 
 (defn domain [ident]
   (let [e (d/entity (mea/get-db) [:domain/ident ident])]

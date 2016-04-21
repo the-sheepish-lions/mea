@@ -1,0 +1,269 @@
+;; a partition for global common entities
+[{:db/id #db/id[:db.part/db -1]
+  :db/ident :db.part/mea
+  :db.install/_partition :db.part/db}]
+
+[
+ ;; Participants
+ {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/ppt_id
+   :db/valueType :db.type/uuid
+   :db/cardinality :db.cardinality/one
+   :db/unique :db.unique/value
+   :db/doc "A unique external ID for Patients"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/first_name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/index true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/last_name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/index true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/middle_name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/index true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/dob
+   :db/valueType :db.type/instant
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/sex
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/one
+   :db/isComponent true
+   :db.install/_attribute :db.part/db}
+
+  ;; sexes
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.sex/male]
+  [:db/add #db/id[:db.part/mea] :db/ident :ppt.sex/female]
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/address
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/one
+   :db/isComponent true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/phones
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/emails
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/isComponent true
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :ppt/measurements
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db/doc "A list of measurements taken on the participants"
+   :db.install/_attribute :db.part/db}
+
+  ;; Phones
+  {:db/id #db/id[:db.part/db]
+   :db/ident :phone/name
+   :db/valueType :db.type/keyword
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :phone/value
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  ;; Studies
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/keyword
+   :db/valueType :db.type/keyword
+   :db/cardinality :db.cardinality/one
+   :db/unique :db.unique/value
+   :db/doc "The reference name"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "A more user friendly name"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/ppts
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db/doc "The participants in the study"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study/attributes
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/many
+   :db/isComponent true
+   :db/doc "Attributes that can be added to participants in the study"
+   :db.install/_attribute :db.part/db}
+
+  ;; Study Attributes
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/keyword
+   :db/unique :db.unique/value
+   :db/valueType :db.type/keyword
+   :db/cardinality :db.cardinality/one
+   :db/doc "Attributes that can be added to participants in the study"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "The name of the study attribute to be used in UI"
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :study.attribute/description
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db/doc "A description of the study attribute"
+   :db.install/_attribute :db.part/db}
+
+  ;; Metrics (Types of measurements)
+  {:db/id #db/id[:db.part/db]
+   :db/ident :metric/keyword
+   :db/valueType :db.type/keyword
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :metric/name
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :metric/description
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :metric/unit
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :metric/reference_range
+   :db/valueType :db.type/string
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  ;; Measurements (metric instances)
+  {:db/id #db/id[:db.part/db]
+   :db/ident :measurement/metric
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :measurement/time
+   :db/valueType :db.type/instant
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :measurement/value
+   :db/valueType :db.type/double
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+
+  {:db/id #db/id[:db.part/db]
+   :db/ident :measurement/study
+   :db/valueType :db.type/ref
+   :db/cardinality :db.cardinality/one
+   :db.install/_attribute :db.part/db}
+]
+
+;; Scheduling Entities
+[
+  ;; Events
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/title
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/starts_at
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/ends_at
+  :db/valueType :db.type/instant
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/location
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/description
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/type
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ ;; Event Types
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/keyword
+  :db/valueType :db.type/keyword
+  :db/cardinality :db.cardinality/one
+  :db/unique :db.unique/value
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/name
+  :db/valueType :db.type/string
+  :db/cardinality :db.cardinality/one
+  :db.install/_attribute :db.part/db}
+
+ {:db/id #db/id[:db.part/db]
+  :db/ident :event/entity_types
+  :db/valueType :db.type/ref
+  :db/cardinality :db.cardinality/many
+  :db/doc "Other types of entities that can be associated with this event type"
+  :db.install/_attribute :db.part/db}
+
+ ;; Personnel
+]

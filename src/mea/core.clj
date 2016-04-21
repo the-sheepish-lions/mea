@@ -44,7 +44,7 @@
   (if (d/create-database db-uri)
     (do
       (transact-all (d/connect db-uri) "db/schema.edn")
-      (transact-all (d/connect db-uri) "db/seed.edn")
+      (transact-all (d/connect db-uri) "db/seed-test.edn")
       :done)
     :already-setup))
 
@@ -52,7 +52,8 @@
 (def db-uri (get datomic-config :datomic.uri))
 
 ;; setup && seed database
-;;(setup-db db-uri)
+;; TODO: make run for development only
+(setup-db db-uri)
 
 ;; our database connection
 (defn get-conn [] (d/connect db-uri))
