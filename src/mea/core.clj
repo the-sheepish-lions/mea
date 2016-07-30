@@ -53,7 +53,7 @@
 
 ;; setup && seed database
 ;; TODO: make run for development only
-(setup-db db-uri)
+;;(setup-db db-uri)
 
 ;; our database connection
 (defn get-conn [] (d/connect db-uri))

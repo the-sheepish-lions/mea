@@ -1,4 +1,8 @@
- [{:db/valueType :db.type/string,
+ [
+  {:db/id #db/id[:db.part/db -152]
+   :db/ident :db.part/mea
+   :db.install/_partition :db.part/db}
+  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
@@ -455,29 +459,29 @@
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -74],
   :db/ident :metric/unit}
- {:db/valueType :db.type/ref,
-  :db/isComponent false,
+ {:db/valueType :db.type/instant,
+  :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/doc "The time of the moment",
   :db/id #db/id[:db.part/db -75],
   :db/ident :moment/leveled_at}
  {:db/valueType :db.type/ref,
-  :db/isComponent false,
+  :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/doc "The user who created the moment",
   :db/id #db/id[:db.part/db -76],
   :db/ident :moment/leveled_by}
  {:db/valueType :db.type/ref,
-  :db/isComponent false,
+  :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/doc "An optional note for the moment",
   :db/id #db/id[:db.part/db -77],
   :db/ident :moment/note}
  {:db/valueType :db.type/ref,
-  :db/isComponent false,
+  :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/doc "The ppt of the moment",
@@ -737,7 +741,7 @@
   :db/id #db/id[:db.part/db -116],
   :db/ident :ppt/middle_name}
  {:db/valueType :db.type/ref,
-  :db/isComponent false,
+  :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/doc "The ppt's moments (i.e. level instances)",
@@ -966,4 +970,5 @@
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -151],
-  :db/ident :vista.ppt/patient_key}]
+  :db/ident :vista.ppt/patient_key}
+]

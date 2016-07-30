@@ -207,6 +207,8 @@
   (let [e (d/entity (mea/get-db) [:domain/ident ident])]
     {:db/id (:db/id e)
      :domain/ident (:domain/ident e)
+     :domain/graduations (:domain/graduations e)
+     :domain/assignments (into [] (:domain/assignments e))
      :domain/events (domain-events ident)
      :study/ppts (distinct (concat (:study/ppts e) (domain-ppts ident)))
      :domain.ppts/idents (map e->map (:domain.ppts/idents e))
