@@ -61,7 +61,8 @@
 
 (defn read-transit-str [s]
   (let [io (java.io.StringBufferInputStream. s)
-        r (transit/reader io :json {:handlers {"db/id" (transit/read-handler (fn [rep] (apply d/tempid rep)))}})]
+        r (transit/reader io :json {:handlers {"db/id" (transit/read-handler #(apply d/tempid %))
+                                               "decimal" (transit/read-handler #(java.lang.Double. %))}})]
     (transit/read r)))
 
 (comment
@@ -69,6 +70,7 @@
   (read-transit-str (write-transit-str (transit/tagged-value "db/id" [:db.part/db -1])))
   (java.io.StringBufferInputStream. "[\"~#db/id\",[\"~:db.part/db\",-1]]")
 
+  (read-transit-str "[\"~:db/add\", 1234213423, \"~:some/attr\", \"~d1.0\"]")
   )
 
 (defn json-response
