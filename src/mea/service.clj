@@ -176,30 +176,38 @@
                   [?e :ppt/domains ?d]] (mea/get-db) ident)
     count))
 
-(defn domain-ppts
-  ([ident] (domain-ppts ident :last))
-  ([ident sortby]
-    (let [fields {:first 1 :last 2}
-          sort-idx (or (fields sortby) 2)]
-      (->>
-        (d/q '[:find ?e ?fname ?lname
-               :in $ ?ident
-               :where [?d :domain/ident ?ident]
-                      [?e :ppt/domains ?d]
-                      [?e :ppt/first_name ?fname]
-                      [?e :ppt/last_name ?lname]] (mea/get-db) ident)
+(defn domain-pcps [ident]
+  (->>
+    (d/q '[:find ?e ?fname ?lname
+           :in $ ; ?ident
+           :where [?e :pcp/first_name ?fname]
+                  [?e :pcp/last_name ?lname]] (mea/get-db))
+    (sort-by #(nth % 1))
+    (map first)
+    (map #(d/entity (mea/get-db) %))))
 
-        ;(pager page psize)
-        (sort-by #(nth % sort-idx))
-        (map first)
-        (map #(d/entity (mea/get-db) %))
-        (map #(dissoc (e->map %) :ppt/domains))))))
+(defn domain-ppts
+  ([ident] (domain-ppts ident :ppt/last_name))
+  ([ident sortby]
+    (->>
+      (d/q '[:find ?e
+             :in $ ?ident
+             :where [?d :domain/ident ?ident]
+                    [?e :ppt/domains ?d]] (mea/get-db) ident)
+
+      ;(pager page psize)
+      (map first)
+      (map #(d/entity (mea/get-db) %))
+      (sort-by #(get % sortby))
+      (map #(dissoc (e->map %) :ppt/domains)))))
 
 (comment
 
   (domain-ppts :study/test)
 
   (ppt-count :study/test)
+
+  (domain-pcps :study/test)
 
   )
 
@@ -214,6 +222,7 @@
      :domain.ppts/idents (map e->map (:domain.ppts/idents e))
      :domain.events/types (map e->map (:domain.events/types e))
      :domain/medications (:domain/medications e)
+     :domain/pcps (domain-pcps ident)
      :study/attributes (map e->map (:study/attributes e))}))
 
 (comment

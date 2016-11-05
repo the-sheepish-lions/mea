@@ -10,3 +10,4 @@ config/*.properties
 .idea/
 *.sw*
 resources/*.csv
+.nrepl-port
