@@ -43,8 +43,8 @@
 (defn setup-db [db-uri]
   (if (d/create-database db-uri)
     (do
-      (transact-all (d/connect db-uri) "db/schema.edn")
-      (transact-all (d/connect db-uri) "db/seed.edn")
+      (transact-all (d/connect db-uri) "db/schema-new.edn")
+      ;(transact-all (d/connect db-uri) "db/seed.edn")
       :done)
     :already-setup))
 
