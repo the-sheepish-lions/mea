@@ -214,6 +214,95 @@
 
   )
 
+;; API
+;; 
+;; Data Managment
+;;  - assert
+;;  - retract
+;;  - query
+;;
+;; State Management (levels)
+;;
+;;  - assert / retract -scale
+;;  - assert / retract -level
+;;  - assert / retract -moment
+;;
+;; IPC
+;;  - send
+;;  - receive
+;;  - channel
+;;
+;; Procedural Programming
+;;  - Clojure
+;;
+;; Data Management
+;;
+;;  POST /data - create data store
+;;    params:
+;;      - namespace (the name of the data store)
+;;
+;;  GET /data/:database - return a (lazy) database object
+;;    params:
+;;      - q (optional, db query)
+;;      - asof (optional, timestamp to return a version of the database)
+;;  
+;;  POST /data/:database/:eid - assert fact to data store
+;;    params:
+;;      - attribute (required)
+;;      - value (required)
+;;
+;;  DELETE /data/:database/:eid - retract fact from data store (if no attribute or value is specified whole entity is retracted)
+;;    params:
+;;      - attribute (optional)
+;;      - value (optional)
+;;
+;; State Mangagment
+;;
+;; POST /process - assert scale
+;;  params:
+;;    - ident (required)
+;;    - name (required)
+;;    - description (optional)
+;;    - receptors (optional)
+;;
+;; DELETE /process/:name - retract a scale
+;;
+;; POST /process/:process/level - assert level
+;;  params:
+;;    - ident (required)
+;;    - name (required)
+;;    - description (optional)
+;;    - entityType (optional, defaults to :mea.type/any)
+;;
+;; DELETE /process/:process/level/:level - retract level
+;;
+;; POST /process/:process/level/:level - assert moment
+;;   params:
+;;     - entity (ref to mea entity, UUID)
+;;     - comment (optional)
+;;     - refs (optional, other refs to mea entities)
+;;
+;; DELETE /scale/:scale/level/:level/:mid - retract moment
+;;
+;; IPC
+;;
+;; POST /channel - assert channel
+;;  params:
+;;    - ident (required)
+;;    - name (required)
+;;    - description (optional)
+;;
+;; POST /channel/:channel/receive - assert "receive" procedure to dispatch based on message pattern
+;;  params:
+;;    - pattern (required)
+;;    - procedure (required, map of the following)
+;;        - lang
+;;        - code
+;;
+;; POST /channel/:channel/send - send message to channel
+;;  params:
+;;    - data (required)
+
 (defroutes main-routes
   ;; generic entity interface everything else is depreciated
   (GET "/entities/:id" [id]
