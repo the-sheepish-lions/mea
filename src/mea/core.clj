@@ -1,8 +1,7 @@
 (ns mea.core
   (:require [datomic.api :as d]
             [clojure.java.io :as io]
-            [clojure.data.csv :as csv]
-            [clojure.spec :as s])
+            [clojure.data.csv :as csv])
   (:import datomic.Util)
   (:gen-class))
 
@@ -66,7 +65,7 @@
 (defn setup-db [db-uri schema]
   (if (d/create-database db-uri)
     (do
-      (d/transact (d/connect db-uri) schema)
+      @(d/transact (d/connect db-uri) schema)
       :done)
     :already-setup))
 
@@ -80,10 +79,10 @@
 
 (defn get-db [] (d/db (get-conn)))
 
-(def schema [
-  [{:db/id #db/id[:db.part/db -1]
-    :db/ident :db.part/mea
-    :db.install/_partition :db.part/mea}
+(def schema
+  [{:db/id "mea"
+    :db/ident :db.part/mea}
+   [:db/add :db.part/db :db.install/partition "mea"]
 
    {:db/id #db/id[:db.part/db -2]
     :db/ident :mea/namespace
@@ -96,52 +95,44 @@
     :db/ident :mea.namespace/ident
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/identity}
 
    {:db/id #db/id[:db.part/db -23]
     :db/ident :mea.namespace/name
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -24]
     :db/ident :mea.namespace/doc
     :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -25]
     :db/ident :mea.channel/ident
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/identity}
 
    {:db/id #db/id[:db.part/db -26]
     :db/ident :mea.channel/name
     :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -27]
     :db/ident :mea.channel/doc
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -28]
     :db/ident :mea.channel/handler
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/one
-    :db/isComponent false
     :db/doc "The process that is waiting on messages on the channel"}
 
    {:db/id #db/id[:db.part/db -3]
     :db/ident :mea/eid
     :db/valueType :db.type/uuid
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/identity
     :db/doc "An entity's external ID"}
 
@@ -149,7 +140,6 @@
     :db/ident :mea/type
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/value
     :db/doc "An entity's type tag (should correspond to an entity's spec name)"}
 
@@ -157,22 +147,19 @@
     :db/ident :mea.process/ident
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/identity}
 
    {:db/id #db/id[:db.part/db -5]
-    :db/ident :mea.process/string
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/ident :mea.process/name
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -6]
     :db/ident :mea.process/doc
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
-   {:db/id #db/id[:db.part/db -10]
+   {:db/id #db/id[:db.part/db -29]
     :db/ident :mea.process/levels
     :db/valueType :db.type/ref
     :db/cardinality :db.cardinality/many
@@ -187,86 +174,78 @@
    {:db/id #db/id[:db.part/db -17]
     :db/ident :mea.receptor/ident
     :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -18]
     :db/ident :mea.receptor/doc
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -19]
     :db/ident :mea.receptor/lang
     :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -20]
     :db/ident :mea.receptor/code
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -21]
-    :db/ident :mea.receptor/messagePattern
+    :db/ident :mea.receptor/pattern
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -7]
     :db/ident :mea.level/ident
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
-    :db/isComponent true
     :db/unique :db.unique/identity
     :db/doc "A namespaced keyword to identify the level of the form PROCESS_IDENT/LEVEL_IDENT (e.g. :grade.recruitment/0.1)"}
 
    {:db/id #db/id[:db.part/db -8]
     :db/ident :mea.level/name
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -9]
     :db/ident :mea.level/doc
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -11]
     :db/ident :mea.level/type
     :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -13]
-    :db/ident :mea.level/moments
+    :db/ident :mea.moment/level
     :db/valueType :db.type/ref
-    :db/cardinality :db.cardinality/many
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -14]
     :db/ident :mea.moment/entity
     :db/valueType :db.type/ref
-    :db/cardinality :db.cardinality/one
-    :db/isComponent false}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -15]
     :db/ident :mea.moment/comment
     :db/valueType :db.type/string
-    :db/cardinality :db.cardinality/one
-    :db/isComponent true}
+    :db/cardinality :db.cardinality/one}
 
    {:db/id #db/id[:db.part/db -16]
     :db/ident :mea.moment/refs
     :db/valueType :db.type/ref
-    :db/cardinality :db.cardinality/many
-    :db/isComponent false}]
-])
+    :db/cardinality :db.cardinality/many}
+
+   {:db/id #db/id[:db.part/db -30]
+    :db/ident :mea.moment/time
+    :db/valueType :db.type/instant
+    :db/cardinality :db.cardinality/one}]
+)
 
 ;; setup database
-(setup-db db-uri schema)
+;;(setup-db db-uri schema)
 
 ;; Data Managment
 
@@ -276,7 +255,86 @@
   (fn [db datom]
     (= (get (d/entity db (get datom :e)) :mea/namespace) ns)))
 
-;; TODO: create macros defentity and retract-entitydef
+(defn db? [value]
+  (= (class value) datomic.db.Db))
+
+(defn assert-namespace
+  ([ident]
+   (d/transact (get-conn)
+               [{:db/id (d/tempid :db.part/mea)
+                 :mea.namespace/ident ident}]))
+  ([ident name]
+   (d/transact (get-conn)
+               [{:db/id (d/tempid :db.part/mea)
+                 :mea.namespace/ident ident
+                 :mea.namespace/name name}]))
+  ([ident name doc]
+   (d/transact (get-conn)
+               [{:db/id (d/tempid :db.part/mea)
+                 :mea.namespace/ident ident
+                 :mea.namespace/name name
+                 :mea.namespace/doc doc}])))
+
+(comment
+
+  (assert-namespace :mea/test)
+
+)
+
+(defn- entity-lookup
+  [ns ident]
+  (if-let [e (d/entity (get-db) ident)]
+    (do (prn (keys e))
+    (if-let [ens (get e :mea/namespace)]
+        (if (= ns (:mea.namespace/ident ens))
+            e
+            nil)
+        nil))
+    nil))
+
+(defmulti entity (fn [_ ident] (prn ident) (class ident)))
+(defmethod entity
+  clojure.lang.PersistentVector
+  [ns ident]
+  (entity-lookup ns ident))
+(defmethod entity
+  java.util.UUID
+  [ns ident]
+  (entity-lookup ns [:mea/eid ident]))
+(defmethod entity
+  java.lang.Long
+  [ns id]
+  (entity-lookup ns id))
+
+(defn assert
+  "Assert a fact to the given database"
+  ([ns eid spec]
+   (d/transact (get-conn)
+               (if-let [e (entity ns eid)]
+                 [(assoc spec :db/id (:db/id e))]
+                 [(assoc spec :db/id (d/tempid :db.part/mea) :mea/eid eid :mea/namespace [:mea.namespace/ident ns])])))
+  ([ns eid attr value]
+    (d/transact (get-conn)
+                (if-let [e (entity ns eid)]
+                  [[:db/add [:mea/eid eid] attr value]]
+                  [(assoc {:db/id (d/tempid :db.part/mea) :mea/eid eid :mea/namespace [:mea.namespace/ident ns]}
+                          attr
+                          value)]))))
+(defn retract
+  "Retracts a fact from the given database"
+  ([ns eid]
+   (if-let [e (entity ns eid)]
+    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
+  ([ns eid attr value]
+   (if-let [e (entity ns eid)]
+    (d/transact (get-conn) [[:db/retract (get e :db/id) attr value]]))))
+
+(defn query
+  "Perform a query on the given database"
+  [ns query]
+  (d/q query (filter (get-db) (with-ns ns))))
+
+;; TODO: create macros defentity
 ;; (defentity process
 ;;   "Defines a process entity which serves to contain process
 ;;    state and provide send/receive sematics over channels"
@@ -296,209 +354,57 @@
 ;;    4. defining a retraction function named 'ENTITY-retract which takes a namespace and an ident as aguments"
 ;;  [ident spec])
 
-(defn db? [value]
-  (= (class value) datomic.db.Db))
+(defmacro defentity
+  [ident & spec]
+  (let [n (namespace ident)
+        nm (name ident)
+        assert-sym (symbol n (str "assert-" nm))
+        retract-sym (symbol n (str "retract-" nm))]
+    `(do
+       (defn ~ident
+         ~(str "Retreive " ident " by ident") 
+         [ns# ident#]
+         (entity ns# ident#))
+       (defn ~assert-sym
+         ~(str "Assert a collection of facts (as a spec map) to the db to create a " ident)
+         [ns# spec#]
+         (let [eid# (d/squuid)]
+           (deref (assert ns# eid# spec#))
+           eid#))
+       (defn ~retract-sym
+         ~(str "Retract a " ident " from the given database") 
+         [ns# id#]
+         (if-let [e# (~ident ns# id#)]
+           (deref (d/transact (get-conn) [[:db.fn/retractEntity (get e# :db/id)]]))))) ))
 
-(s/def ::datomic-entity
-  (s/keys :req [:db/id]))
+(defentity channel)
 
-(s/def ::entity
-  (s/keys :req [:mea/eid :mea/type :mea/namespace]))
+(defentity process)
 
-(s/fdef entity
-  :args (s/cat :ns keyword? :eid (s/or :uuid uuid? :db-id int? :db-ref vector? :db-ident keyword?))
-  :ret (s/or :found ::entity :not-found nil?))
+(defentity level)
 
-(defn entity
-  [ns eid]
-  (if-let [e (s/assert ::entity (d/entity (get-db) eid))]
-    (if-let [ens (get e :mea/namespace)]
-        (if (= ns ens) e nil)
-        nil)
-    nil))
-
-(s/fdef assert
-  :args (s/or :fact (s/cat :ns keyword? :eid uuid? :attr keyword? :value any?)
-              :spec (s/cat :ns keyword? :eid uuid? :spec map?))
-  :ret any?)
-
-(defn assert
-  "Assert a fact to the given database"
-  ([ns eid spec]
-   (d/transact (get-conn)
-               (if-let [e (entity ns eid)]
-                 [(assoc spec :db/id [:mea/id eid])]
-                 [(assoc spec :db/id (d/tempid :db.part/mea) :mea/id eid)])))
-  ([ns eid attr value]
-    (d/transact (get-conn)
-                (if-let [e (entity ns eid)]
-                  [[:db/add [:mea/eid eid] attr value]]
-                  [(assoc {:db/id (d/tempid :db.part/mea) :mea/id eid}
-                          attr
-                          value)]))))
-
-(s/fdef retract
-  :args (s/or :fact (s/cat :ns keyword? :eid uuid? :attr keyword? :value any?)
-              :whole-entity (s/cat :ns keyword? :eid uuid?))
-  :ret any?)
-
-(defn retract
-  "Retracts a fact from the given database"
-  ([ns eid]
-   (if-let [e (entity ns eid)]
-    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
-  ([ns eid attr value]
-   (if-let [e (entity ns eid)]
-    (d/transact (get-conn) [[:db/retract (get e :db/id) attr value]]))))
-
-(defn query
-  "Perform a query on the given database"
-  [ns query]
-  (d/q query (filter (get-db) (with-ns ns))))
-
-(s/def ::channel-spec
-  (s/keys :req [:mea.channel/ident :mea.channel/name]
-          :opt [:mea.channel/description]))
-
-(s/def ::channel
-  (s/and ::entity ::channel-spec))
-
-(s/def ::process-spec
-  (s/keys :req [:mea.process/ident :mea.process/name]
-          :opt [:mea.process/description]))
-
-(s/def ::process
-  (s/and ::entity ::process-spec))
-
-(s/def ::level-spec
-  (s/keys :req [:mea.level/process :mea.level/ident :mea.level/name]
-          :opt [:mea.level/description :mea.level/entityType]))
-
-(s/def ::level
-  (s/and ::entity ::level-spec))
-
-(s/def ::moment-spec
-  (s/keys :req [:mea.moment/level :mea.moment/entity]
-          :opt [:mea.moment/comment :mea.moment/refs]))
-
-(s/def ::moment
-  (s/and ::entity ::moment-spec))
-
-(s/fdef channel
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret (s/or :found ::channel :not-found nil?))
-
-(defn channel
-  "Retrieve channel by ident"
-  [ns ident]
-  (entity ns [:mea.channel/ident ident]))
-
-(s/fdef channel-assert
-  :args (s/cat :ns keyword? :spec ::channel-spec)
-  :ret ::channel)
-
-(defn channel-assert
-  "Assert a collection of facts (as a spec map) to the db to create a channel"
-  [ns spec]
-  (assert ns spec))
-
-(s/fdef channel-retract
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret any?)
-
-(defn channel-retract
-  "Retract a channel from the given database"
-  [ns ident]
-  (if-let [e (channel ns ident)]
-    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
-
-(s/fdef process
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret (s/or :found ::process :not-found nil?))
-
-(defn process
-  "Retrieve process by ident"
-  [ns ident]
-  (entity ns [:mea.process/ident ident]))
-
-(s/fdef process-assert
-  :args (s/cat :ns keyword? :spec ::process-spec)
-  :ret ::process)
-
-(defn process-assert
-  "Assert a collection of facts (as a spec map) to the db to create a process"
-  [ns spec]
-  (assert ns spec))
-
-(s/fdef process-retract
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret any?)
-
-(defn process-retract
-  "Retract a process from the given database"
-  [ns ident]
-  (if-let [e (process ns ident)]
-    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
-
-(s/fdef level
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret (s/or :found ::level :not-found nil?))
-
-(defn level
-  "Retrieve level by ident"
-  [ns ident]
-  (entity ns [:mea.level/ident ident]))
-
-(s/fdef level-assert
-  :args (s/cat :ns keyword? :spec ::level-spec)
-  :ret ::level)
-
-(defn level-assert
-  "Assert a collection of facts (as a spec map) to the db to create a level"
-  [ns spec]
-  (assert ns spec))
-
-(s/fdef level-retract
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret any?)
-
-(defn level-retract
-  "Retract a level from the given database"
-  [ns ident]
-  (if-let [e (level ns ident)]
-    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
-
-(s/fdef moment
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret (s/or :found ::moment :not-found nil?))
-
-(defn moment
-  "Retrieve moment by uuid"
-  [ns eid]
-  (entity ns eid))
-
-(s/fdef moment-assert
-  :args (s/cat :ns keyword? :spec ::level-spec)
-  :ret ::moment)
-
-(defn moment-assert
-  "Assert a collection of facts (as a spec map) to the db to create a moment"
-  [ns spec]
-  (assert ns spec))
-
-(s/fdef moment-retract
-  :args (s/cat :ns keyword? :ident keyword?)
-  :ret any?)
-
-(defn moment-retract
-  "Retract a moment from the given database"
-  [ns eid]
-  (if-let [e (moment ns eid)]
-    (d/transact (get-conn) [[:db.fn/retractEntity (get e :db/id)]])))
+(defentity moment)
 
 (defn wait-on
   "Takes a channel and a process that will wait on, and respond to messages from that channel"
   [ch proc])
+
+(defn moments
+  "Returns the moments (the level history) of an entity"
+  [ns eid]
+  (if-let [e (entity ns eid)]
+    (->> (d/q '[:find ?e :in $ ?eid :where [?e :mea.moment/entity ?eid]] (get-db) (:db/id e))
+         (map first)
+         (map #(d/entity (get-db) %)))
+    '()))
+
+(defn current-level
+  "Returns the most recent level of an entity"
+  [ns eid]
+  (-> (moments ns eid)
+      sort
+      first
+      :mea.moment/level))
 
 (comment
 

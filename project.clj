@@ -2,8 +2,8 @@
   :description "A participant database"
   :url "http://phrei.org"
   :plugins [[lein-ring "0.8.11"]]
-  :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                 [com.datomic/datomic-free "0.9.4894"]
+  :dependencies [[org.clojure/clojure "1.8.0"]
+                 [com.datomic/datomic-free "0.9.5544"]
                  [compojure "1.1.9"]
                  [ring/ring-core "1.3.1"]
                  [ring/ring-jetty-adapter "1.3.1"]

@@ -10,3 +10,7 @@ config/*.properties
 .idea/
 *.sw*
 resources/*.csv
+.DS_Store
+.lein-failures
+vendor/datomic-console-0.1.172/
+out.txt
