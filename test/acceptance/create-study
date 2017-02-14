@@ -1,3 +1,0 @@
-#!/bin/sh
-curl -X POST -H "Content-type: application/json" --data-binary '{"name": "grade", "human_name": "GRADE"}' http://localhost:3000/study
-curl -X POST -H "Content-type: application/json" --data-binary '{"name": "confirm", "human_name": "CONFIRM"}' http://localhost:3000/study
