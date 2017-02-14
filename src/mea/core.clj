@@ -171,11 +171,6 @@
     :db/cardinality :db.cardinality/many
     :db/isComponent true}
 
-   {:db/id #db/id[:db.part/db -17]
-    :db/ident :mea.receptor/ident
-    :db/valueType :db.type/keyword
-    :db/cardinality :db.cardinality/one}
-
    {:db/id #db/id[:db.part/db -18]
     :db/ident :mea.receptor/doc
     :db/valueType :db.type/string
@@ -281,18 +276,20 @@
 
 )
 
-(defn- entity-lookup
-  [ns ident]
-  (if-let [e (d/entity (get-db) ident)]
-    (do (prn (keys e))
-    (if-let [ens (get e :mea/namespace)]
-        (if (= ns (:mea.namespace/ident ens))
-            e
-            nil)
-        nil))
-    nil))
+(defn in-namespace?
+  "Tests if entity exists in a namespace identified by a fully qualified keyword identity"
+  [e ns]
+  (let [ens (get e :mea/namespace)]
+    (and (not (nil? ens)) (= ns (:mea.namespace/ident ens)))))
 
-(defmulti entity (fn [_ ident] (prn ident) (class ident)))
+(defn entity-lookup
+  [ns ident]
+  (let [e (d/entity (get-db) ident)]
+    (if (and (not (nil? e)) (in-namespace? e ns))
+      e
+      nil)))
+
+(defmulti entity (fn [_ ident] (class ident)))
 (defmethod entity
   clojure.lang.PersistentVector
   [ns ident]
@@ -381,6 +378,8 @@
 
 (defentity process)
 
+(defentity receptor)
+
 (defentity level)
 
 (defentity moment)
@@ -405,6 +404,12 @@
       sort
       first
       :mea.moment/level))
+
+(defn send
+  "Dispatch a message to a process"
+  [proc msg]
+  (let [p (process proc)]
+   ))
 
 (comment
 

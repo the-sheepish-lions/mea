@@ -19,31 +19,46 @@
 (def cid1 (assert-client :mea/test {:drn.client/name "PHREI"}))
 (def cid2 (assert-client :mea/test {:drn.client/name "UNM Community Health Center"}))
 
+(assert-level :mea/test {:mea.level/ident :drn.billing/c0.0
+                         :mea.level/name "Initialize client into billing system (specify billing category for client)"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c0.1
+                         :mea.level/name "Client has been initialized into billing system"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c1.0
+                         :mea.level/name "Create new invoice for client"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c1.1
+                         :mea.level/name "Invoice created"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c2.0
+                         :mea.level/name "Send invoice to client"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c2.1
+                         :mea.level/name "Invoice sent to client"})
+
+(assert-level :mea/test {:mea.level/ident :drn.billing/c3.0
+                         :mea.level/name "Payment has been recieved"})
+
+(assert-receptor :mea/test {:mea.receptor/doc "Print incoming entities to stdout"
+                            :mea.receptor/pattern "{:mea/eid s/Int}"
+                            :mea.receptor/lang :lang/clojure
+                            :mea.receptor/code "(fn [e] (prn e))"})
+
 (assert-process :mea/test {:mea.process/ident :drn/billing
                            :mea.process/name "Billing process for D.R. Newman"
                            :mea.process/levels
-                            [{:mea.level/ident :drn.billing/c0.0
-                              :mea.level/name "Initialize client into billing system (specify billing category for client)"}
-                             {:mea.level/ident :drn.billing/c0.1
-                              :mea.level/name "Client has been initialized into billing system"}
-                             {:mea.level/ident :drn.billing/c1.0
-                              :mea.level/name "Create new invoice for client"}
-                             {:mea.level/ident :drn.billing/c1.1
-                              :mea.level/name "Invoice created"}
-                             {:mea.level/ident :drn.billing/c2.0
-                              :mea.level/name "Send invoice to client"}
-                             {:mea.level/ident :drn.billing/c2.1
-                              :mea.level/name "Invoice sent to client"}
-                             {:mea.level/ident :drn.billing/c3.0
-                              :mea.level/name "Payment has been recieved"}]})
+                            [[:mea.level/ident :drn.billing/c0.0]
+                             [:mea.level/ident :drn.billing/c0.1]
+                             [:mea.level/ident :drn.billing/c1.0]
+                             [:mea.level/ident :drn.billing/c1.1]
+                             [:mea.level/ident :drn.billing/c2.0]
+                             [:mea.level/ident :drn.billing/c2.1]
+                             [:mea.level/ident :drn.billing/c3.0]]})
 
 (def d (java.util.Date.))
-(def l (entity :mea/test [:mea.level/ident :drn.billing/c0.0]))
-(def c (entity :mea/test cid0))
-
-(prn d)
-(prn l)
-(prn c)
+(def l (level :mea/test [:mea.level/ident :drn.billing/c0.0]))
+(def c (client :mea/test cid0))
 
 (def mid
   (assert-moment :mea/test {:mea.moment/level (:db/id l)

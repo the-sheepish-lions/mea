@@ -9,7 +9,8 @@
                  [ring/ring-jetty-adapter "1.3.1"]
                  [com.cognitect/transit-clj "0.8.259"]
                  [joda-time/joda-time "2.8.2"]
-                 [org.clojure/data.csv "0.1.2"]]
+                 [org.clojure/data.csv "0.1.2"]
+                 [prismatic/schema "1.1.3"]]
   :ring {:handler mea.service/service}
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
