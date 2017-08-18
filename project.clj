@@ -12,6 +12,10 @@
                  [joda-time/joda-time "2.8.2"]
                  [org.clojure/data.csv "0.1.2"]]
   :ring {:handler mea.service/service}
+  :repl {:plugins [[cider/cider-nrepl "0.10.0-SNAPSHOT"]
+                   [refactor-nrepl "2.0.0-SNAPSHOT"]]
+         :dependencies [[alembic "0.3.2"]
+                        [org.clojure/tools.nrepl "0.2.12"]]}
   :min-lein-version "2.0.0"
   :resource-paths ["config", "resources"]
   :profiles {:dev {:dependencies [[javax.servlet/servlet-api "2.5"]

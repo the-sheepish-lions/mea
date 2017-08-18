@@ -4,54 +4,63 @@
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/city}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/country}
+ 
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/state}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/street1}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/street2}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/street3}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :address/zip}
+
  {:db/valueType :db.type/string,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :alert/message}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :alert/priority}
+
  {:db/valueType :db.type/ref,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
@@ -59,6 +68,7 @@
   :db/doc "A semantic type for the attachment",
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attachment/consent}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
@@ -66,6 +76,7 @@
   :db/doc "An attachment's description",
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attachment/description}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
@@ -73,18 +84,21 @@
   :db/doc "An attachment's path",
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attachment/path}
+
  {:db/valueType :db.type/string,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/description}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/entity}
+
  {:db/unique :db.unique/identity,
   :db/valueType :db.type/keyword,
   :db/isComponent true,
@@ -92,24 +106,28 @@
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/ident}
+
  {:db/valueType :db.type/string,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/name}
+
  {:db/valueType :db.type/keyword,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/namespace}
+
  {:db/valueType :db.type/long,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :attr/order}
+
  {:db/unique :db.unique/identity,
   :db/valueType :db.type/keyword,
   :db/isComponent false,
@@ -117,48 +135,56 @@
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/ident}
+
  {:db/valueType :db.type/instant,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/irb_approval_on}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/phase}
+
  {:db/valueType :db.type/instant,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/signed_on}
+
  {:db/valueType :db.type/double,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/version}
+
  {:db/valueType :db.type/boolean,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :consent/vista_scanned?}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain/attrs}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain/events}
+
  {:db/unique :db.unique/identity,
   :db/valueType :db.type/keyword,
   :db/isComponent true,
@@ -166,60 +192,70 @@
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain/ident}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain/medications}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain/parents}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain.events/types}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/many,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :domain.ppts/idents}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :encounter/note}
+
  {:db/valueType :db.type/boolean,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :event/all_day?}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :event/comment}
+
  {:db/valueType :db.type/ref,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :event/created_by}
+
  {:db/valueType :db.type/string,
   :db/isComponent false,
   :db.install/_attribute :db.part/db,
   :db/cardinality :db.cardinality/one,
   :db/id #db/id[:db.part/db -1000004],
   :db/ident :event/description}
+
  {:db/valueType :db.type/ref,
   :db/isComponent true,
   :db.install/_attribute :db.part/db,
