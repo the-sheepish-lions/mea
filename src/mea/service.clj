@@ -43,6 +43,8 @@
 ;;    params:
 ;;      - q (optional, db query)
 ;;      - asof (optional, timestamp to return a version of the database)
+;;      - page (optional)
+;;      - page_size (optional)
 ;;  
 ;;  POST /data/:database/:eid - assert fact to data store
 ;;    params:
@@ -104,13 +106,32 @@
 (defn pager [page psize col]
   (->> col (drop psize) (take psize)))
 
+(defn assert-namespace
+  [{nm :name ident :ident doc :doc}]
+  (cond (and nm ident doc)
+          (mea/assert-namespace (keyword ident) nm doc)
+        (and nm ident)
+          (mea/assert-namespace (keyword ident) nm)
+        ident
+          (mea/assert-namespace (keyword ident))
+        :else
+          (throw (Exception. "ident is required"))))
+
+(defn get-database
+  [{db :database, q :q, page :page, psize :page_size}]
+  )
+
 (defroutes api
-  (POST "/data" {{nm :name ident :ident doc :doc} :body}
-        (cond (and nm ident doc) (mea/assert-namespace (keyword ident) nm doc)
-              (and nm ident) (mea/assert-namespace (keyword ident) nm)
-              (nil? ident) (mea/assert-namespace (keyword ident))
-              :else (json-response {:status "success" :data {:name nm :ident ident :doc doc}))
-        )
+  (POST "/data" {body :body}
+      (try
+        (assert-namespace body)
+        (json-response {:status "success" :data body})
+        (catch Exception e
+          (json-response
+            {:status "error"
+             :data {:message (.getMessage e)
+                    :class (str (.getClass e))
+                    :stacktrace (.getStackTrace e)}}))))
 
   (GET "/data/:database" {{db :database} :params}
        db)

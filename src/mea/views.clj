@@ -81,6 +81,7 @@
 (defn remove-namespaced-keys [m]
   (into {} (map (fn [x] [(keyword (name (first x))) (second x)]) m)))
 
+(comment
 ;; TODO: need to create a query parser for this
 (defn find-ppts
   "Return Participant Search Results as JSON"
@@ -183,3 +184,4 @@
                                    :order (get e :study.attribute/order)}) (get s :study/attributes))
          :study/ppt_count (count (get s :study/ppts))}
         (json-response))))
+)

@@ -196,7 +196,7 @@
     :db/valueType :db.type/keyword
     :db/cardinality :db.cardinality/one
     :db/unique :db.unique/identity
-    :db/doc "A namespaced keyword to identify the level of the form PROCESS_IDENT/LEVEL_IDENT (e.g. :grade.recruitment/0.1)"}
+    :db/doc "A namespaced keyword to identify the level of the form PROCESS_IDENT/LEVEL_CODE (e.g. :grade.recruitment/0.1)"}
 
    {:db/id #db/id[:db.part/db -8]
     :db/ident :mea.level/name
