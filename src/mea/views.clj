@@ -77,7 +77,7 @@
   "A helper function for returning a JSON response"
   [body]
   {:status 200
-   :headers {"Content-Type" "application/json; charset=utf8"}
+   :headers {"Content-Type" "application/json; charset=utf8", "Access-Control-Allow-Origin" "http://localhost:3333"}
    :body (write-transit-str body)})
 
 (defn remove-namespaced-keys [m]

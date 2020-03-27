@@ -11,3 +11,5 @@ config/*.properties
 *.sw*
 resources/*.csv
 .nrepl-port
+.DS_Store
+.lein-failures
