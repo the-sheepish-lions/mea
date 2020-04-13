@@ -1,6 +1,6 @@
 (defproject mea-service "0.0.1-SNAPSHOT"
   :description "An entity based, workflow, scheduling database"
-  :url "http://phrei.org"
+  :url "http://delonnewman.name"
   :plugins [[lein-ring "0.8.11"]]
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.datomic/datomic-free "0.9.4894"]
