@@ -1,6 +1,6 @@
 (defproject mea-service "0.0.1-SNAPSHOT"
   :description "A participant database"
-  :url "http://phrei.org"
+  :url "http://delonnewman.name"
   :plugins [[lein-ring "0.8.11"]]
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.datomic/datomic-free "0.9.5544"]
