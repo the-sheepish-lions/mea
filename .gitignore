@@ -13,3 +13,4 @@ resources/*.csv
 .nrepl-port
 .DS_Store
 .lein-failures
+.idea/
